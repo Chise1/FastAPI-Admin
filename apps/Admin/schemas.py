@@ -9,7 +9,7 @@
 """
 from typing import List
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 
 class ItemBase(BaseModel):
@@ -34,13 +34,12 @@ class UserBase(BaseModel):
 
 
 class UserCreate(UserBase):
-    password: str
+    password: str=Field(...,description="字段不能为空")
 
 
 class User(UserBase):
     id: int
     is_active: bool
     items: List[Item] = []
-
     class Config:
         orm_mode = True

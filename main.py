@@ -8,16 +8,19 @@
 @info    :
 """
 from typing import List
-
+import  requests
 from fastapi import Depends, FastAPI, HTTPException
 from sqlalchemy.orm import Session
-from databases import SessionLocal, engine
+
+from fastapi_admin.fastapi_admin import FastAPIAdmin
+from database import SessionLocal, engine
 from apps.Admin import views, models, schemas
+from settings import SQLALCHEMY_DATABASE_URL
 
 crud=views
 models.Base.metadata.create_all(bind=engine)
 from apps.Admin.models import User
-
+from fastapi import Body
 app = FastAPI()
 
 # Dependency
@@ -31,7 +34,7 @@ def get_db():
         print("我关闭了")
         db.close()
 from  apps.Admin.models import Item
-User.__model__.write2route('/user',app,User,get_db = SessionLocal())
+# User.__model__.write2route('/user',app,User,get_db = SessionLocal())
 # Item.__model__.write2route('/get_item',app,Item,db = SessionLocal())
 @app.post("/users/", response_model=schemas.User)
 def create_user(user: schemas.UserCreate, db: Session = Depends(get_db)):
@@ -45,6 +48,28 @@ def create_user(user: schemas.UserCreate, db: Session = Depends(get_db)):
 def read_users(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
     users = crud.get_users(db, skip=skip, limit=limit)
     return users
+# SchemaUser=get_schema(User)
+#
+# @app.post('/test_get_schema',response_model=List[SchemaUser])
+# async def test_read_users(db: Session = Depends(get_db),item:SchemaUser=Body(...,)):
+#     """
+#     测试自动生成的schema
+#     :param db:
+#     :return:
+#     """
+#     print(item.test())
+#     print(item.test_view())
+#     ret= db.query(Item).all()
+#     return ret
+
+
+#创建并注册admin类
+admin=FastAPIAdmin(app,SQLALCHEMY_DATABASE_URL)
+
+#注册所有需要创建基本方法的Model
+admin.register_Model(User)
+
+
 
 
 @app.get("/users/{user_id}", response_model=schemas.User)
@@ -70,4 +95,4 @@ def read_items(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
 
 if __name__=="__main__":
     import uvicorn
-    uvicorn.run(app)
+    uvicorn.run(app,)

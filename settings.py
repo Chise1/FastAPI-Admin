@@ -18,3 +18,6 @@ DATABASES = {
         'PORT': 6379,
         'ENGINE': "mysql+pymysql"
 }
+SQLALCHEMY_DATABASE_URL = "{}://{}:{}@{}/{}?charset=utf8mb4".format(DATABASES.get('ENGINE'), DATABASES.get('USER'),
+                                                                    DATABASES.get('PASSWORD'), DATABASES.get('HOST'),
+                                                                    DATABASES.get('NAME'))

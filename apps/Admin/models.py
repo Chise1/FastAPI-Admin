@@ -11,7 +11,7 @@ from pydantic import  BaseModel
 from sqlalchemy.orm import relationship
 
 from apps.Admin.test_selializers import get_basemodel
-from databases import Base
+from database import Base
 from sqlalchemy import Column, String, Boolean, Integer, ForeignKey
 
 @get_basemodel
@@ -27,7 +27,7 @@ class User(Base):
 class Item(Base):
     __tablename__ = "items"
     id = Column(Integer, primary_key=True, index=True)
-    title = Column(String(64), index=True)
+    title = Column(String(64), index=True,)
     description = Column(String(64), index=True)
     owner_id = Column(Integer, ForeignKey("users.id"))
     owner = relationship("User", back_populates="items")
