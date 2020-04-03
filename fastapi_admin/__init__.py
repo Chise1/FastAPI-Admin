@@ -103,12 +103,13 @@ class FastAPIAdmin:
         self.__router = router
         self.database = databases.Database(database_connectinfo)
 
-    def register_Model(self, model: Any, methods: Union[List[str], Set[str]] = ('GET', 'POST', 'PUT', 'DELETE'),
+    def register_Model(self, model: Any,view=None, methods: Union[List[str], Set[str]] = ('GET', 'POST', 'PUT', 'DELETE'),
                        fields: Union[str, List[str]] = "__all__",
                        list_display: Union[str, List[str]] = "__all__", put_fields: Optional[List[str]] = None) -> bool:
         """
         注册model到路由,
         :param model: sqlalchemy的model
+        :param view: 自定义View类
         :param methods: 允许访问的方法
         :param fields:  post的字段，默认为所有字段，如果需要
         :param list_display: 显示在列表的字段
@@ -117,7 +118,8 @@ class FastAPIAdmin:
         """
         res_schema = create_schema(model)
         print("类型：", isinstance(res_schema, BaseModel))
-        view = BaseView(model, self.database, res_schema)
+        if not view:
+            view = BaseView(model, self.database, res_schema)
         # 注册一个专门的蓝图
         router = APIRouter()
         router.on_event('startup')(view.startup)
@@ -128,3 +130,4 @@ class FastAPIAdmin:
         router.put('/' + res_schema.__name__ + "/{id}")(view.update)
         router.delete('/' + res_schema.__name__ + "/{id}")(view.delete)
         self.__router.include_router(router, prefix='/admin', tags=['admin'])
+        return True
