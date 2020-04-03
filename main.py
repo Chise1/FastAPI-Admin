@@ -12,7 +12,7 @@ import  requests
 from fastapi import Depends, FastAPI, HTTPException
 from sqlalchemy.orm import Session
 
-from fastapi_admin.fastapi_admin import FastAPIAdmin
+from fastapi_admin import FastAPIAdmin
 from database import SessionLocal, engine
 from apps.Admin import views, models, schemas
 from settings import SQLALCHEMY_DATABASE_URL
@@ -20,7 +20,6 @@ from settings import SQLALCHEMY_DATABASE_URL
 crud=views
 models.Base.metadata.create_all(bind=engine)
 from apps.Admin.models import User
-from fastapi import Body
 app = FastAPI()
 
 # Dependency
