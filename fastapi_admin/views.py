@@ -8,10 +8,8 @@
 @info    :默认的view类
 """
 import copy
-from typing import Optional, Dict, List,Union
-
+from typing import List,Union
 from fastapi import Body
-
 
 class BaseView:
     """该类为抽象类，需要继承并实现相关功能"""
@@ -31,19 +29,16 @@ class BaseView:
         self.schema = schema
         for k, v in kwargs.items():
             setattr(self, k, v)
-        async def update(instance: schema = Body(..., )):
-            res = copy.deepcopy(instance)
-            # id = instance.pop('id')
-            query = self.table.filter(id=instance.id).update(instance)
-            await database.execute(query)
-            return res
+        async def update(id,instance: schema = Body(..., )):
+            query = self.table.update().where(self.model.id==id).values(**dict(instance))
+            return await database.execute(query)
         self.update = update
         async def create(instance: schema = Body(..., )):
-            query = self.table.create(instance)
+            query = self.table.insert().values(dict(instance))
             return await database.execute(query)
         self.create = create
-        async def delete(instance: schema = Body(..., )):
-            query = self.table.delete(instance)
+        async def delete(id,):
+            query = self.table.delete().where(self.model.id==id)
             return await database.execute(query)
         self.delete = delete
 
@@ -61,7 +56,11 @@ class BaseView:
         else:
             query = self.table.select(*self.get_list_display())
         return await self.database.fetch_all(query)
-
+    async def retrieve(self,id):
+        """返回一个类型的详情"""
+        query=self.table.select().where(self.model.id==id)
+        print(query)
+        return await self.database.fetch_one(query)
     async def startup(self):
         print("连接数据库了")
         await self.database.connect()

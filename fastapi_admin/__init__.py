@@ -7,34 +7,29 @@
 @Software: PyCharm
 @info    :
 """
-# -*- encoding: utf-8 -*-
-"""
-@File    : fastapi_admin.py
-@Time    : 2020/4/2 21:04
-@Author  : chise
-@Email   : chise123@live.com
-@Software: PyCharm
-@info    :主函数,
-"""
 from fastapi import APIRouter
 from typing import Optional, Union, List, Any, Set
 import databases
 
 # __router = APIRouter()
 from pydantic import BaseModel, Field
-from sqlalchemy import Integer
+from sqlalchemy import Integer,Boolean
 
 from .views import BaseView
 
 
 def create_schema(model):
     """通过读取model的信息，创建schema"""
+#     base_model: str = """
+# class {}(BaseModel):
+# {}
+#     class Config:
+#        orm_mode = True
+# """
     base_model: str = """
 class {}(BaseModel):
 {}
-    class Config:
-       orm_mode = True
-"""
+    """
     model_name = model.__name__
     # mappings为从model获取的相关配置
     __mappings__ = {}  # {'name':{'field':Field,'type':type,}}
@@ -43,8 +38,8 @@ class {}(BaseModel):
         filed_name = str(filed).split('.')[-1]
 
         if filed.default:
-            if isinstance(filed.default.arg,str):
-                default_value = '"'+ filed.default.arg+'"'
+            if isinstance(filed.default.arg, str):
+                default_value = '"' + filed.default.arg + '"'
             # elif isinstance(filed.default.arg,bool):
             #     default_value = str(filed.default.arg)
             else:
@@ -55,20 +50,22 @@ class {}(BaseModel):
             default_value = 'None'
         # 生成的结构： id:int=Field(...,)大概这样的结构
         # res_field = Field(default_value, description=filed.description)  # Field参数
-        res_field = 'Field({}, description="{}")'.format(default_value,filed.description)  # Field参数
+        res_field = 'Field({}, description="{}")'.format(default_value, filed.description)  # Field参数
 
         if isinstance(filed.type, Integer):
-            tp = filed_name+':int='+res_field
+            tp = filed_name + ':int=' + res_field
+        elif isinstance(filed.type,Boolean):
+            tp=filed_name+ ":bool ="+res_field
         else:
-            tp = filed_name+ ':str='+res_field
+            tp = filed_name + ':str=' + res_field
         __mappings__[filed_name] = tp
-    s_fields=''
-    for k,v in __mappings__.items():
-        s_fields=s_fields+'    '+v+'\n'
-    base_model=base_model.format(model_name,s_fields)
-    cls_dict = {"BaseModel": BaseModel,"Field":Field}
+    s_fields = ''
+    for k, v in __mappings__.items():
+        s_fields = s_fields + '    ' + v + '\n'
+    base_model = base_model.format(model_name, s_fields)
+    cls_dict = {"BaseModel": BaseModel, "Field": Field}
     print(base_model)
-    exec (base_model, cls_dict)
+    exec(base_model, cls_dict)
     # 将schema绑定到model
     return cls_dict[model_name]
 
@@ -103,7 +100,7 @@ class FastAPIAdmin:
         """
         # 注册
         # router.include_router(self.__router,prefix='/admin',tags=['admin'])
-        self.__router=router
+        self.__router = router
         self.database = databases.Database(database_connectinfo)
 
     def register_Model(self, model: Any, methods: Union[List[str], Set[str]] = ('GET', 'POST', 'PUT', 'DELETE'),
@@ -118,18 +115,16 @@ class FastAPIAdmin:
         :param put_fields: put允许的字段，默认为fields相同
         :return:是否注册成功
         """
-        res_schema=create_schema(model)
-        print("类型：",isinstance(res_schema,BaseModel))
-        view=BaseView(model,self.database,res_schema)
-        #注册一个专门的蓝图
-        router=APIRouter()
+        res_schema = create_schema(model)
+        print("类型：", isinstance(res_schema, BaseModel))
+        view = BaseView(model, self.database, res_schema)
+        # 注册一个专门的蓝图
+        router = APIRouter()
         router.on_event('startup')(view.startup)
         router.on_event('shutdown')(view.shutdown)
-        router.get('/'+res_schema.__name__,response_model=List[res_schema])(view.list)
-        router.post('/' + res_schema.__name__ )(view.create)
-        router.put('/' + res_schema.__name__  )(view.update)
-        router.delete('/' + res_schema.__name__ )(view.delete)
+        router.get('/' + res_schema.__name__, response_model=List[res_schema])(view.list)
+        router.get('/' + res_schema.__name__ + "/{id}", response_model=res_schema)(view.retrieve)
+        router.post('/' + res_schema.__name__)(view.create)
+        router.put('/' + res_schema.__name__ + "/{id}")(view.update)
+        router.delete('/' + res_schema.__name__ + "/{id}")(view.delete)
         self.__router.include_router(router, prefix='/admin', tags=['admin'])
-    def register_Table(self):
-        """注册Table到路由，功能和register_Model一致"""
-        pass
