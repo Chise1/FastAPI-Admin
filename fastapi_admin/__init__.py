@@ -163,4 +163,4 @@ class FastAPIAdmin:
             router.put(prefix + "/{id}",tags=tags)(view.update)
         if methods.count('DELETE'):
             router.delete(prefix + "/{id}",tags=tags)(view.delete)
-        self.__router.include_router(router,prefix='/admin',tags=['admin'])
+        self.__router.include_router(router,prefix='/admin')
