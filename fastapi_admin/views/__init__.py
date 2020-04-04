@@ -7,14 +7,14 @@
 @Software: PyCharm
 @info    :
 """
-from typing import List, Union
+from typing import List, Union, Set
 from fastapi import Body
 
 
 class BaseView:
     """该类为抽象类，需要继承并实现相关功能"""
     list_display: Union[List[str], str] = "__all__"
-
+    methods: Union[List[str], Set[str]] = ('GET', 'Retrieve', 'POST', 'PUT', 'DELETE')
     def __init__(self, model, schema, database=None, **kwargs):
         """
         初始化基于类的视图,

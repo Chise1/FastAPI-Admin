@@ -136,12 +136,23 @@ class FastAPIAdmin:
         return True
 
     def register_view(self, view, prefix=None,
-                      methods: Union[List[str], Set[str]] = ('GET', 'Retrieve', 'POST', 'PUT', 'DELETE'), tags=None ):
+                      methods: Union[List[str], Set[str]] = ('GET', 'Retrieve', 'POST', 'PUT', 'DELETE'), tags=None):
+        """
+        如果不使用自定义的，则需要methods为None
+        :param view:
+        :param prefix:
+        :param methods:
+        :param tags:
+        :return:
+        """
         router = APIRouter()
         if not prefix:
             prefix = "/" + view.__class__.__name__
+
         if not tags:
             tags=[prefix[1:]]
+        if not methods:
+            methods=view.methods
         if methods.count('GET'):
             router.get(prefix,tags=tags )(view.list)
         if methods.count('Retrieve'):
