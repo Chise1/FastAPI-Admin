@@ -14,8 +14,7 @@ from apps.Admin.test_selializers import get_basemodel
 from database import Base
 from sqlalchemy import Column, String, Boolean, Integer, ForeignKey
 
-@get_basemodel
-class User(Base):
+class UserTest(Base):
     __tablename__='users'
     id = Column(Integer, primary_key=True, index=True)
     email = Column(String(64), unique=True, index=True,default="chise123@live.com")
@@ -23,7 +22,6 @@ class User(Base):
     is_active = Column(Boolean, default=True)
     items = relationship("Item", back_populates="owner")
 
-@get_basemodel
 class Item(Base):
     __tablename__ = "items"
     id = Column(Integer, primary_key=True, index=True)

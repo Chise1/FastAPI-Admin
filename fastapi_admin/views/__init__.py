@@ -1,21 +1,21 @@
 # -*- encoding: utf-8 -*-
 """
-@File    : views.py
-@Time    : 2020/4/3 0:01
+@File    : __init__.py.py
+@Time    : 2020/4/4 18:40
 @Author  : chise
 @Email   : chise123@live.com
 @Software: PyCharm
-@info    :默认的view类
+@info    :
 """
-import copy
-from typing import List,Union
+from typing import List, Union
 from fastapi import Body
+
 
 class BaseView:
     """该类为抽象类，需要继承并实现相关功能"""
     list_display: Union[List[str], str] = "__all__"
 
-    def __init__(self, model=None, database=None, schema=None, **kwargs):
+    def __init__(self, model, schema, database=None, **kwargs):
         """
         初始化基于类的视图,
             注意：可以先初始化，并实现所有的功能之后，在调用之前一定要将model、database、schema补齐
@@ -24,23 +24,23 @@ class BaseView:
         :param schema: 用作数据验证的schema
         """
         self.model = model
-        self.table=model.__table__
+        self.table = model.__table__
         self.database = database
         self.schema = schema
         for k, v in kwargs.items():
             setattr(self, k, v)
-        async def update(id,instance: schema = Body(..., )):
-            query = self.table.update().where(self.model.id==id).values(**dict(instance))
+
+        async def update(id, instance: schema = Body(..., )):
+            query = self.table.update().where(self.model.id == id).values(**dict(instance))
             return await database.execute(query)
+
         self.update = update
+
         async def create(instance: schema = Body(..., )):
             query = self.table.insert().values(dict(instance))
             return await database.execute(query)
+
         self.create = create
-        async def delete(id,):
-            query = self.table.delete().where(self.model.id==id)
-            return await database.execute(query)
-        self.delete = delete
 
     def get_list_display(self) -> List[str]:
         """获取类对应要展示的数字,默认为list_display"""
@@ -56,15 +56,13 @@ class BaseView:
         else:
             query = self.table.select(*self.get_list_display())
         return await self.database.fetch_all(query)
-    async def retrieve(self,id):
+
+    async def retrieve(self, id):
         """返回一个类型的详情"""
-        query=self.table.select().where(self.model.id==id)
+        query = self.table.select().where(self.model.id == id)
         print(query)
         return await self.database.fetch_one(query)
-    async def startup(self):
-        print("连接数据库了")
-        await self.database.connect()
 
-    async def shutdown(self):
-        print("关闭数据库了")
-        await self.database.disconnect()
+    async def delete(self, id):
+        query = self.table.delete().where(self.model.id == id)
+        return await self.database.execute(query)

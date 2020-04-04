@@ -8,9 +8,3 @@
 @info    :记录注册的类需要的数据库的方法
 """
 
-async def startup(database):
-    await database.connect()
-
-
-async def shutdown(database):
-    await database.disconnect()

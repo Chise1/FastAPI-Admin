@@ -8,24 +8,23 @@
 @info    :
 """
 from fastapi import APIRouter
-from typing import Optional, Union, List, Any, Set
-import databases
-
-# __router = APIRouter()
+from typing import Union, List, Any, Set
 from pydantic import BaseModel, Field
-from sqlalchemy import Integer,Boolean
-
+from sqlalchemy import Integer, Boolean
+from .databaseManage import AdminDatabase
 from .views import BaseView
+from typing import Optional
+from .auth.models import User, Group, Permission
 
 
-def create_schema(model):
-    """通过读取model的信息，创建schema"""
-#     base_model: str = """
-# class {}(BaseModel):
-# {}
-#     class Config:
-#        orm_mode = True
-# """
+def create_schema(model, exclude: Optional[List[str]] = None, ):
+    """
+    通过读取model的信息，创建schema
+    :param model:
+    :param exclude:
+    :return:
+    """
+
     base_model: str = """
 class {}(BaseModel):
 {}
@@ -33,9 +32,11 @@ class {}(BaseModel):
     model_name = model.__name__
     # mappings为从model获取的相关配置
     __mappings__ = {}  # {'name':{'field':Field,'type':type,}}
-
     for filed in model.__table__.c:
         filed_name = str(filed).split('.')[-1]
+        if exclude:
+            if exclude.count(filed_name):
+                continue
 
         if filed.default:
             if isinstance(filed.default.arg, str):
@@ -54,8 +55,8 @@ class {}(BaseModel):
 
         if isinstance(filed.type, Integer):
             tp = filed_name + ':int=' + res_field
-        elif isinstance(filed.type,Boolean):
-            tp=filed_name+ ":bool ="+res_field
+        elif isinstance(filed.type, Boolean):
+            tp = filed_name + ":bool =" + res_field
         else:
             tp = filed_name + ':str=' + res_field
         __mappings__[filed_name] = tp
@@ -64,7 +65,6 @@ class {}(BaseModel):
         s_fields = s_fields + '    ' + v + '\n'
     base_model = base_model.format(model_name, s_fields)
     cls_dict = {"BaseModel": BaseModel, "Field": Field}
-    print(base_model)
     exec(base_model, cls_dict)
     # 将schema绑定到model
     return cls_dict[model_name]
@@ -89,10 +89,9 @@ class FastAPIAdmin:
         """要求这个类是单例模式，保证只注册一次"""
         if not cls._instance:
             cls._instance = super().__new__(cls)
-
         return cls._instance
 
-    def __init__(self, router: APIRouter, database_connectinfo: str):
+    def __init__(self, router: APIRouter, database_url: str):
         """
         创建的时候，注册__router,
         传递数据的链接方式，独立连接，使用异步方式。
@@ -101,9 +100,19 @@ class FastAPIAdmin:
         # 注册
         # router.include_router(self.__router,prefix='/admin',tags=['admin'])
         self.__router = router
-        self.database = databases.Database(database_connectinfo)
+        self.admin_database = AdminDatabase(database_url=database_url)
+        # 需要创建数据库的时候
+        # self.admin_database.create_all()
+        self.database = self.admin_database.database
+        router.on_event('startup')(self.admin_database.startup)
+        router.on_event('shutdown')(self.admin_database.shutdown)
+        # 注册基础的model
+        self.register_Model(User)
+        self.register_Model(Group)
+        self.register_Model(Permission)
 
-    def register_Model(self, model: Any,view=None, methods: Union[List[str], Set[str]] = ('GET', 'POST', 'PUT', 'DELETE'),
+    def register_Model(self, model: Any, view=None,
+                       methods: Union[List[str], Set[str]] = ('GET', 'Retrieve', 'POST', 'PUT', 'DELETE'),
                        fields: Union[str, List[str]] = "__all__",
                        list_display: Union[str, List[str]] = "__all__", put_fields: Optional[List[str]] = None) -> bool:
         """
@@ -119,36 +128,28 @@ class FastAPIAdmin:
         res_schema = create_schema(model)
         print("类型：", isinstance(res_schema, BaseModel))
         if not view:
-            view = BaseView(model, self.database, res_schema)
+            view = BaseView(model=model, database=self.database, schema=res_schema)
         else:
-            view.schema=res_schema
-            view.database=self.database
-            view.model=model
-
+            view.database = self.database
         # 注册一个专门的蓝图
+        self.register_view(view, "/" + model.__name__, methods=methods)
         return True
-    def register_view(self,view):
+
+    def register_view(self, view, prefix=None,
+                      methods: Union[List[str], Set[str]] = ('GET', 'Retrieve', 'POST', 'PUT', 'DELETE'), tags=None ):
         router = APIRouter()
-        router.on_event('startup')(view.startup)
-        router.on_event('shutdown')(view.shutdown)
-        try:
-            router.get('/' + view.__name__, )(view.list)
-        except:
-            pass
-        try:
-            router.get('/' + view.__name__ + "/{id}",)(view.retrieve)
-        except:
-            pass
-        try:
-            router.post('/' + view.__name__)(view.create)
-        except:
-            pass
-        try:
-            router.put('/' + view.__name__ + "/{id}")(view.update)
-        except:
-            pass
-        try:
-            router.delete('/' + view.__name__ + "/{id}")(view.delete)
-        except:
-            pass
-        self.__router.include_router(router, prefix='/admin', tags=['admin'])
+        if not prefix:
+            prefix = "/" + view.__class__.__name__
+        if not tags:
+            tags=[prefix[1:]]
+        if methods.count('GET'):
+            router.get(prefix,tags=tags )(view.list)
+        if methods.count('Retrieve'):
+            router.get(prefix + "/{id}",tags=tags )(view.retrieve)
+        if methods.count('POST'):
+            router.post(prefix,tags=tags)(view.create)
+        if methods.count('PUT'):
+            router.put(prefix + "/{id}",tags=tags)(view.update)
+        if methods.count('DELETE'):
+            router.delete(prefix + "/{id}",tags=tags)(view.delete)
+        self.__router.include_router(router,prefix='/admin',tags=['admin'])

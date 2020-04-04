@@ -8,18 +8,18 @@
 @info    :
 """
 from typing import List
-import  requests
+import requests
 from fastapi import Depends, FastAPI, HTTPException
 from sqlalchemy.orm import Session
 
+from apps.Admin.models import UserTest
 from fastapi_admin import FastAPIAdmin
 from database import SessionLocal, engine
 from apps.Admin import views, models, schemas
 from settings import SQLALCHEMY_DATABASE_URL
 
-crud=views
+crud = views
 models.Base.metadata.create_all(bind=engine)
-from apps.Admin.models import User
 app = FastAPI()
 
 # Dependency
@@ -62,7 +62,6 @@ app = FastAPI()
 # #     return ret
 
 
-
 # @app.get("/users/{user_id}", response_model=schemas.User)
 # def read_user(user_id: int, db: Session = Depends(get_db)):
 #     db_user = crud.get_user(db, user_id=user_id)
@@ -80,13 +79,12 @@ app = FastAPI()
 # def read_items(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
 #     items = crud.get_items(db, skip=skip, limit=limit)
 #     return items
-#创建并注册admin类
-admin=FastAPIAdmin(app,SQLALCHEMY_DATABASE_URL)
+# 创建并注册admin类
+admin = FastAPIAdmin(app, SQLALCHEMY_DATABASE_URL)
+# 注册所有需要创建基本方法的Model
+admin.register_Model(UserTest)
 
-#注册所有需要创建基本方法的Model
-admin.register_Model(User)
-
-
-if __name__=="__main__":
+if __name__ == "__main__":
     import uvicorn
-    uvicorn.run(app,)
+
+    uvicorn.run(app, )
