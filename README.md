@@ -23,4 +23,10 @@ admin.register_Model(User)
 ```
 会生成这样的接口
 ![avatar](doc/1585901894(1).jpg)
+## update
 
+### V20200404
+完成引入异步database功能
+新增register_Model方法对methods的支持(支持retrieve)
+引入默认表:User、Group、Permission
+下阶段：引入权限控制机制
