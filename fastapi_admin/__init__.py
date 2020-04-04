@@ -120,14 +120,35 @@ class FastAPIAdmin:
         print("类型：", isinstance(res_schema, BaseModel))
         if not view:
             view = BaseView(model, self.database, res_schema)
+        else:
+            view.schema=res_schema
+            view.database=self.database
+            view.model=model
+
         # 注册一个专门的蓝图
+        return True
+    def register_view(self,view):
         router = APIRouter()
         router.on_event('startup')(view.startup)
         router.on_event('shutdown')(view.shutdown)
-        router.get('/' + res_schema.__name__, response_model=List[res_schema])(view.list)
-        router.get('/' + res_schema.__name__ + "/{id}", response_model=res_schema)(view.retrieve)
-        router.post('/' + res_schema.__name__)(view.create)
-        router.put('/' + res_schema.__name__ + "/{id}")(view.update)
-        router.delete('/' + res_schema.__name__ + "/{id}")(view.delete)
+        try:
+            router.get('/' + view.__name__, )(view.list)
+        except:
+            pass
+        try:
+            router.get('/' + view.__name__ + "/{id}",)(view.retrieve)
+        except:
+            pass
+        try:
+            router.post('/' + view.__name__)(view.create)
+        except:
+            pass
+        try:
+            router.put('/' + view.__name__ + "/{id}")(view.update)
+        except:
+            pass
+        try:
+            router.delete('/' + view.__name__ + "/{id}")(view.delete)
+        except:
+            pass
         self.__router.include_router(router, prefix='/admin', tags=['admin'])
-        return True
