@@ -7,15 +7,18 @@
 @Software: PyCharm
 @info    :
 """
+from ..auth.depends import get_current_active_user
+from ..auth.models import User
 from typing import List, Union, Set
-from fastapi import Body
+from fastapi import Body, Depends
 
 
 class BaseView:
     """该类为抽象类，需要继承并实现相关功能"""
     list_display: Union[List[str], str] = "__all__"
     methods: Union[List[str], Set[str]] = ('GET', 'Retrieve', 'POST', 'PUT', 'DELETE')
-    def __init__(self, model, schema, database=None, **kwargs):
+
+    def __init__(self, model, schema, database=None, need_user=False, **kwargs):
         """
         初始化基于类的视图,
             注意：可以先初始化，并实现所有的功能之后，在调用之前一定要将model、database、schema补齐
@@ -23,23 +26,30 @@ class BaseView:
         :param database: 操作数据库的database
         :param schema: 用作数据验证的schema
         """
+        print("注意，需要重构解决猴子修补的问题")
         self.model = model
         self.table = model.__table__
         self.database = database
         self.schema = schema
         for k, v in kwargs.items():
             setattr(self, k, v)
-
-        async def update(id, instance: schema = Body(..., )):
-            query = self.table.update().where(self.model.id == id).values(**dict(instance))
-            return await database.execute(query)
-
+        if need_user:
+            async def update(id, instance: schema = Body(..., ), current_user: User = Depends(get_current_active_user)):
+                query = self.table.update().where(self.model.id == id).values(**dict(instance))
+                return await database.execute(query)
+        else:
+            async def update(id, instance: schema = Body(..., ), ):
+                query = self.table.update().where(self.model.id == id).values(**dict(instance))
+                return await database.execute(query)
         self.update = update
-
-        async def create(instance: schema = Body(..., )):
-            query = self.table.insert().values(dict(instance))
-            return await database.execute(query)
-
+        if need_user:
+            async def create(instance: schema = Body(..., ), current_user: User = Depends(get_current_active_user)):
+                query = self.table.insert().values(dict(instance))
+                return await database.execute(query)
+        else:
+            async def create(instance: schema = Body(..., )):
+                query = self.table.insert().values(dict(instance))
+                return await database.execute(query)
         self.create = create
 
     def get_list_display(self) -> List[str]:

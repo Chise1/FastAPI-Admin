@@ -7,6 +7,4 @@
 @Software: PyCharm
 @info    :
 """
-from fastapi.security import OAuth2PasswordBearer
-#登录要求依赖
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/token")
+from . import depends,models,schemas,views

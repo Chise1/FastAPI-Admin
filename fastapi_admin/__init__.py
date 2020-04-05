@@ -11,10 +11,13 @@ from fastapi import APIRouter
 from typing import Union, List, Any, Set
 from pydantic import BaseModel, Field
 from sqlalchemy import Integer, Boolean
+
+from .auth.views import login,  create_create
 from .databaseManage import AdminDatabase
 from .views import BaseView
 from typing import Optional
 from .auth.models import User, Group, Permission
+from .auth.schemas import Token
 
 
 def create_schema(model, exclude: Optional[List[str]] = None, ):
@@ -106,15 +109,22 @@ class FastAPIAdmin:
         self.database = self.admin_database.database
         router.on_event('startup')(self.admin_database.startup)
         router.on_event('shutdown')(self.admin_database.shutdown)
+        # 注册login
+        router.post('/token', response_model=Token)(login)
         # 注册基础的model
-        self.register_Model(User)
-        self.register_Model(Group)
-        self.register_Model(Permission)
+        # self.register_Model(User, need_user=False)
+        use_schema = create_schema(User)
+        view = BaseView(model=User, database=self.database, schema=use_schema, need_user=False)
+        view.create=create_create(User,self.database)
+        self.register_view(view,prefix="/user")
+        self.register_Model(Group, need_user=True)
+        self.register_Model(Permission, need_user=True)
 
     def register_Model(self, model: Any, view=None,
                        methods: Union[List[str], Set[str]] = ('GET', 'Retrieve', 'POST', 'PUT', 'DELETE'),
                        fields: Union[str, List[str]] = "__all__",
-                       list_display: Union[str, List[str]] = "__all__", put_fields: Optional[List[str]] = None) -> bool:
+                       list_display: Union[str, List[str]] = "__all__", put_fields: Optional[List[str]] = None,
+                       need_user=False, depends=None) -> bool:
         """
         注册model到路由,
         :param model: sqlalchemy的model
@@ -128,15 +138,16 @@ class FastAPIAdmin:
         res_schema = create_schema(model)
         print("类型：", isinstance(res_schema, BaseModel))
         if not view:
-            view = BaseView(model=model, database=self.database, schema=res_schema)
+            view = BaseView(model=model, database=self.database, schema=res_schema, need_user=need_user)
         else:
             view.database = self.database
         # 注册一个专门的蓝图
-        self.register_view(view, "/" + model.__name__, methods=methods)
+        self.register_view(view, "/" + model.__name__, methods=methods, depends=depends)
         return True
 
     def register_view(self, view, prefix=None,
-                      methods: Union[List[str], Set[str]] = ('GET', 'Retrieve', 'POST', 'PUT', 'DELETE'), tags=None):
+                      methods: Union[List[str], Set[str]] = ('GET', 'Retrieve', 'POST', 'PUT', 'DELETE'), tags=None,
+                      depends=None):
         """
         如果不使用自定义的，则需要methods为None
         :param view:
@@ -148,19 +159,24 @@ class FastAPIAdmin:
         router = APIRouter()
         if not prefix:
             prefix = "/" + view.__class__.__name__
-
         if not tags:
-            tags=[prefix[1:]]
+            tags = [prefix[1:]]
         if not methods:
-            methods=view.methods
+            methods = view.methods
         if methods.count('GET'):
-            router.get(prefix,tags=tags )(view.list)
+            router.get(prefix, tags=tags)(view.list)
         if methods.count('Retrieve'):
-            router.get(prefix + "/{id}",tags=tags )(view.retrieve)
+            router.get(prefix + "/{id}", tags=tags)(view.retrieve)
         if methods.count('POST'):
-            router.post(prefix,tags=tags)(view.create)
+            router.post(prefix, tags=tags)(view.create)
         if methods.count('PUT'):
-            router.put(prefix + "/{id}",tags=tags)(view.update)
+            router.put(prefix + "/{id}", tags=tags)(view.update)
         if methods.count('DELETE'):
-            router.delete(prefix + "/{id}",tags=tags)(view.delete)
-        self.__router.include_router(router,prefix='/admin')
+            router.delete(prefix + "/{id}", tags=tags)(view.delete)
+        self.__router.include_router(router, prefix='/admin')
+
+    def register_router(self, func, method, prefix, tags=None):
+        if method == 'GET':
+            self.__router.get(prefix, )(func)
+        else:
+            self.__router.post(prefix, )(func)

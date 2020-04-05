@@ -25,6 +25,11 @@ admin.register_Model(User)
 ![avatar](doc/1585901894(1).jpg)
 ## update
 
+### v20200405
+完成权限控制---登录功能
+完成User表的增删改查
+考虑重构BaseView解决猴子修补的问题
+
 ### V20200404
 完成引入异步database功能
 新增register_Model方法对methods的支持(支持retrieve)
