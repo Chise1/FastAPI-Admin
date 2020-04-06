@@ -12,7 +12,7 @@ from typing import Union, List, Any, Set
 from pydantic import BaseModel, Field
 from sqlalchemy import Integer, Boolean
 
-from .auth.views import login,  create_create
+from .auth.views import login, create_create
 from .databaseManage import AdminDatabase
 from .views import BaseView
 from typing import Optional
@@ -115,8 +115,8 @@ class FastAPIAdmin:
         # self.register_Model(User, need_user=False)
         use_schema = create_schema(User)
         view = BaseView(model=User, database=self.database, schema=use_schema, need_user=False)
-        view.create=create_create(User,self.database)
-        self.register_view(view,prefix="/user")
+        view.create = create_create(User, self.database)
+        self.register_view(view, prefix="/user")
         self.register_Model(Group, need_user=True)
         self.register_Model(Permission, need_user=True)
 
@@ -175,8 +175,17 @@ class FastAPIAdmin:
             router.delete(prefix + "/{id}", tags=tags)(view.delete)
         self.__router.include_router(router, prefix='/admin')
 
-    def register_router(self, func, method, prefix, tags=None):
+    def register_router(self, func, method, prefix, res_model, tags=None, ):
+        """
+        注册路由
+        :param func:函数
+        :param method: method方法
+        :param prefix: 路由
+        :param res_model: 模型
+        :param tags: 标签
+        :return:
+        """
         if method == 'GET':
-            self.__router.get(prefix, )(func)
+            self.__router.get(prefix, response_model=List[res_model])(func)
         else:
             self.__router.post(prefix, )(func)
