@@ -16,7 +16,7 @@ from .auth.views import login, create_create
 from .databaseManage import AdminDatabase
 from .views import BaseView
 from typing import Optional
-from .auth.models import User, Group, Permission
+from .auth.models import User, Group, Permission,UserLog
 from .auth.schemas import Token
 
 
@@ -40,7 +40,6 @@ class {}(BaseModel):
         if exclude:
             if exclude.count(filed_name):
                 continue
-
         if filed.default:
             if isinstance(filed.default.arg, str):
                 default_value = '"' + filed.default.arg + '"'
@@ -54,7 +53,7 @@ class {}(BaseModel):
             default_value = 'None'
         # 生成的结构： id:int=Field(...,)大概这样的结构
         # res_field = Field(default_value, description=filed.description)  # Field参数
-        res_field = 'Field({}, description="{}")'.format(default_value, filed.description)  # Field参数
+        res_field = 'Field({}, description="{}")'.format(default_value, filed.comment)  # Field参数
 
         if isinstance(filed.type, Integer):
             tp = filed_name + ':int=' + res_field
@@ -68,6 +67,7 @@ class {}(BaseModel):
         s_fields = s_fields + '    ' + v + '\n'
     base_model = base_model.format(model_name, s_fields)
     cls_dict = {"BaseModel": BaseModel, "Field": Field}
+    print(base_model)
     exec(base_model, cls_dict)
     # 将schema绑定到model
     return cls_dict[model_name]
@@ -93,7 +93,9 @@ class FastAPIAdmin:
         if not cls._instance:
             cls._instance = super().__new__(cls)
         return cls._instance
-
+    def create_database(self):
+        """创建数据库"""
+        self.admin_database.create_all()
     def __init__(self, router: APIRouter, database_url: str):
         """
         创建的时候，注册__router,
@@ -119,7 +121,7 @@ class FastAPIAdmin:
         self.register_view(view, prefix="/user")
         self.register_Model(Group, need_user=True)
         self.register_Model(Permission, need_user=True)
-
+        self.register_Model(UserLog,need_user=True)
     def register_Model(self, model: Any, view=None,
                        methods: Union[List[str], Set[str]] = ('GET', 'Retrieve', 'POST', 'PUT', 'DELETE'),
                        fields: Union[str, List[str]] = "__all__",
@@ -189,6 +191,6 @@ class FastAPIAdmin:
             if res_model:
                 self.__router.get(prefix, response_model=List[res_model])(func)
             else:
-                self.__router.get(prefix,)(func)
+                self.__router.get(prefix, )(func)
         else:
             self.__router.post(prefix, )(func)

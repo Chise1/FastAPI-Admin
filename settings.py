@@ -22,4 +22,3 @@ DATABASES = {
 #                                                                     DATABASES.get('PASSWORD'), DATABASES.get('HOST'),
 #                                                                     DATABASES.get('NAME'))
 SQLALCHEMY_DATABASE_URL = "sqlite:///./sql_app.db"
-print(SQLALCHEMY_DATABASE_URL)

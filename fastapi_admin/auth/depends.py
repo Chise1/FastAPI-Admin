@@ -9,6 +9,7 @@
 """
 
 from datetime import datetime, timedelta
+from typing import Callable
 
 import jwt
 from fastapi import Depends, FastAPI, HTTPException, status
@@ -126,6 +127,23 @@ async def get_current_active_user(current_user: User = Depends(get_current_user)
     if not current_user.is_active:
         raise HTTPException(status_code=400, detail="已禁用")
     return current_user
+async def not_need_user():
+    """
+    不需要user登录，所以返回为空
+    :return:
+    """
+    return None
+async def create_current_active_user(need_user)->Callable:
+    """
+    确认是否需要用户，如果需要则返回需要的依赖
+    :param need_user:
+    :return:
+    """
+    if need_user:
+        return get_current_active_user
+    else:
+        return not_need_user
+
 def get_password_hash(password):
     """
     获取密码的hash值
