@@ -175,7 +175,7 @@ class FastAPIAdmin:
             router.delete(prefix + "/{id}", tags=tags)(view.delete)
         self.__router.include_router(router, prefix='/admin')
 
-    def register_router(self, func, method, prefix, res_model, tags=None, ):
+    def register_router(self, func, method, prefix, res_model=None, tags=None, ):
         """
         注册路由
         :param func:函数
@@ -186,6 +186,9 @@ class FastAPIAdmin:
         :return:
         """
         if method == 'GET':
-            self.__router.get(prefix, response_model=List[res_model])(func)
+            if res_model:
+                self.__router.get(prefix, response_model=List[res_model])(func)
+            else:
+                self.__router.get(prefix,)(func)
         else:
             self.__router.post(prefix, )(func)

@@ -8,7 +8,7 @@
 @info    :
 """
 from fastapi import FastAPI
-from fastapi_admin import FastAPIAdmin
+from fastapi_admin import FastAPIAdmin, User
 from database import engine
 from apps.Admin import views, models
 from settings import SQLALCHEMY_DATABASE_URL
