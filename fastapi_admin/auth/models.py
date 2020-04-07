@@ -9,11 +9,10 @@
 """
 from sqlalchemy.orm import relationship
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy import Column, String, Boolean, Integer, ForeignKey, Table, DateTime, DECIMAL
+from sqlalchemy import Column, String, Boolean, Integer, ForeignKey, Table, DateTime,DECIMAL
 
 __all__ = ['User', 'Group', 'Permission']
 Base = declarative_base()
-
 
 class User(Base):
     __tablename__ = 'fastapi_auth_user'
