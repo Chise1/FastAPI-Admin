@@ -14,7 +14,7 @@ from sqlalchemy import select, func
 from fastapi_admin import AdminDatabase
 default_page_size = 20
 
-async def __paging_query(page_number: int = 1, page_size: int = default_page_size) -> Dict[str, int]:
+async def paging_query_depend(page_number: int = 1, page_size: int = default_page_size) -> Dict[str, int]:
     """分页依赖"""
     return {"page_number": page_number, "page_size": page_size}
 
@@ -36,6 +36,11 @@ def get_res_schema(schema, defalut=None):
     :param defalut:
     :return:
     """
+    class PagingModel(BaseModel):
+        page_count: int
+        rows_total: int
+        page_number: int
+        page_size: int
     class ResModel(PagingModel):
         data: List[schema] = Field(defalut, )
 
@@ -49,7 +54,7 @@ def page_query(model):
     :return:
     """
 
-    async def res(page: Dict[str, int] = Depends(__paging_query)):
+    async def res(page: Dict[str, int] = Depends(paging_query_depend)):
         query = model.__table__.select().offset((page['page_number'] - 1) * page['page_size']).limit(
             page['page_size'])  # 第一页，每页20条数据。 默认第一页。
         paginate_obj = await AdminDatabase().database.fetch_all(query)

@@ -8,7 +8,6 @@
 @info    :权限先关的schema
 """
 from pydantic import BaseModel
-from .models import User
 class UserSchema(BaseModel):
     id: int
     username: str

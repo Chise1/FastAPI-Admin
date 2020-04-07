@@ -14,13 +14,14 @@ from sqlalchemy import Integer, Boolean
 
 from .auth.views import login, create_create
 from .databaseManage import AdminDatabase
-from .views import BaseView
+from .publicDepends.paging_query import get_res_schema
+from .views import create_View
 from typing import Optional
-from .auth.models import User, Group, Permission,UserLog
+from .auth.models import User, Group, Permission, UserLog
 from .auth.schemas import Token
 
 
-def create_schema(model, exclude: Optional[List[str]] = None, ):
+def create_schema(model, exclude: Optional[List[str]] = None, ) -> (BaseModel, BaseModel):
     """
     通过读取model的信息，创建schema
     :param model:
@@ -29,6 +30,8 @@ def create_schema(model, exclude: Optional[List[str]] = None, ):
     """
 
     base_model: str = """
+class {}(BaseModel):
+{}
 class {}(BaseModel):
 {}
     """
@@ -63,14 +66,19 @@ class {}(BaseModel):
             tp = filed_name + ':str=' + res_field
         __mappings__[filed_name] = tp
     s_fields = ''
+    s_fields_noid = ''
     for k, v in __mappings__.items():
+        if k != "id":
+            s_fields_noid = s_fields_noid + '    ' + v + '\n'
         s_fields = s_fields + '    ' + v + '\n'
-    base_model = base_model.format(model_name, s_fields)
-    cls_dict = {"BaseModel": BaseModel, "Field": Field}
+    base_model = base_model.format(model_name, s_fields, model_name + "Noid", s_fields_noid)
     print(base_model)
+    cls_dict = {"BaseModel": BaseModel, "Field": Field}
     exec(base_model, cls_dict)
     # 将schema绑定到model
-    return cls_dict[model_name]
+    schema = cls_dict[model_name]
+    schema_noid = cls_dict[model_name + "Noid"]
+    return schema, schema_noid
 
 
 class FastAPIAdmin:
@@ -93,9 +101,11 @@ class FastAPIAdmin:
         if not cls._instance:
             cls._instance = super().__new__(cls)
         return cls._instance
+
     def create_database(self):
         """创建数据库"""
         self.admin_database.create_all()
+
     def __init__(self, router: APIRouter, database_url: str):
         """
         创建的时候，注册__router,
@@ -115,13 +125,14 @@ class FastAPIAdmin:
         router.post('/token', response_model=Token)(login)
         # 注册基础的model
         # self.register_Model(User, need_user=False)
-        use_schema = create_schema(User)
-        view = BaseView(model=User, database=self.database, schema=use_schema, need_user=False)
+        schema, schema_noid = create_schema(User)
+        view = create_View(model=User, database=self.database, schema=schema, schema_noid=schema_noid, need_user=False)
         view.create = create_create(User, self.database)
-        self.register_view(view, prefix="/user")
-        self.register_Model(Group, need_user=True)
-        self.register_Model(Permission, need_user=True)
-        self.register_Model(UserLog,need_user=True)
+        self.register_view(view, prefix="/user", methods=['GET', "Retrieve", "PUT",])
+        self.register_Model(Group, )
+        self.register_Model(Permission, )
+        self.register_Model(UserLog, )
+
     def register_Model(self, model: Any, view=None,
                        methods: Union[List[str], Set[str]] = ('GET', 'Retrieve', 'POST', 'PUT', 'DELETE'),
                        fields: Union[str, List[str]] = "__all__",
@@ -137,10 +148,10 @@ class FastAPIAdmin:
         :param put_fields: put允许的字段，默认为fields相同
         :return:是否注册成功
         """
-        res_schema = create_schema(model)
-        print("类型：", isinstance(res_schema, BaseModel))
+        res_schema, schema_noid = create_schema(model)
         if not view:
-            view = BaseView(model=model, database=self.database, schema=res_schema, need_user=need_user)
+            view = create_View(model=model, database=self.database, schema=res_schema, schema_noid=schema_noid,
+                               need_user=need_user)
         else:
             view.database = self.database
         # 注册一个专门的蓝图
@@ -166,7 +177,9 @@ class FastAPIAdmin:
         if not methods:
             methods = view.methods
         if methods.count('GET'):
-            router.get(prefix, tags=tags)(view.list)
+            print("注意，可能需要设置返回model")
+            # get_res_model = get_res_schema(view.schema)
+            router.get(prefix, tags=tags, )(view.list)
         if methods.count('Retrieve'):
             router.get(prefix + "/{id}", tags=tags)(view.retrieve)
         if methods.count('POST'):

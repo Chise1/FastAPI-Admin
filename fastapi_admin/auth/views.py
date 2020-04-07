@@ -45,10 +45,16 @@ def create_create(model, database):
         instance.password = get_password_hash(instance.password)
         query = model.__table__.insert().values(dict(instance))
         return await database.execute(query)
+
     return create
 
 
 async def create_superuser(model, database, instance: UserSchema = Body(..., )):
+    """创建超级管理员"""
     instance.password = get_password_hash(instance.password)
     query = model.__table__.insert().values(dict(instance))
     return await database.execute(query)
+
+
+def create_User_View(model, database):
+    pass

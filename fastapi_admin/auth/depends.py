@@ -133,7 +133,7 @@ async def not_need_user():
     :return:
     """
     return None
-async def create_current_active_user(need_user)->Callable:
+def create_current_active_user(need_user)->Callable:
     """
     确认是否需要用户，如果需要则返回需要的依赖
     :param need_user:

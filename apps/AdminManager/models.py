@@ -7,9 +7,11 @@
 @Software: PyCharm
 @info    :
 """
-from database import Base
+
 from sqlalchemy.orm import relationship
 from sqlalchemy import Column, String, Integer, ForeignKey, DateTime, DECIMAL
+
+from fastapi_admin.auth.models import Base
 
 
 class AccountBook(Base):
