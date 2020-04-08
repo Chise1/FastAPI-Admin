@@ -42,7 +42,8 @@ async def user_register(form_data:RegisterUser):
 
 
 def create_create(model, database):
-    async def create(instance: UserSchema = Body(..., ),current_user: User = Depends(create_current_active_user(True))):
+    async def create(instance: RegisterUser = Body(..., ),current_user: User = Depends(create_current_active_user(True))):
+        print("instance:",instance)
         instance.password = get_password_hash(instance.password)
         query = model.__table__.insert().values(dict(instance))
         return await database.execute(query)

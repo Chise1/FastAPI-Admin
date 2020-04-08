@@ -146,4 +146,5 @@ def get_password_hash(password):
     :param password:原值密码
     :return:
     """
+    print("密码：",password)
     return pwd_context.hash(password)
