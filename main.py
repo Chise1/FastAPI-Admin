@@ -9,12 +9,21 @@
 """
 
 from fastapi import FastAPI
+from starlette.middleware.cors import CORSMiddleware
 
 from fastapi_admin import FastAPIAdmin
 from settings import SQLALCHEMY_DATABASE_URL
-
+# CORS
+origins = []
 app = FastAPI(debug=True)
-
+#配置跨域
+app.add_middleware(
+        CORSMiddleware,
+        allow_origins=origins,
+        allow_credentials=True,
+        allow_methods=["*"],
+        allow_headers=["*"],
+    )
 admin = FastAPIAdmin(app, SQLALCHEMY_DATABASE_URL)
 # 注册所有需要创建基本方法的Model
 from apps.AdminManager.models import AccountBook, AccountBookLog, Member
