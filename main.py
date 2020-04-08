@@ -14,7 +14,7 @@ from starlette.middleware.cors import CORSMiddleware
 from fastapi_admin import FastAPIAdmin
 from settings import SQLALCHEMY_DATABASE_URL
 # CORS
-origins = []
+origins = ['*']
 app = FastAPI(debug=True)
 #配置跨域
 app.add_middleware(
