@@ -13,8 +13,10 @@ from fastapi.security import OAuth2PasswordRequestForm
 from fastapi_admin.auth.depends import authenticate_user, create_access_token, get_current_active_user, \
     get_password_hash
 from fastapi_admin.settings import ACCESS_TOKEN_EXPIRE_MINUTES
+from ..auth.schemas import UserSchema, RegisterUser
 
-
+from .models import User
+from pydantic import EmailStr
 async def login(form_data: OAuth2PasswordRequestForm = Depends()):
     """
     登录账户，获取token
@@ -33,11 +35,11 @@ async def login(form_data: OAuth2PasswordRequestForm = Depends()):
         data={"sub": user.username}, expires_delta=access_token_expires
     )
     return {"access_token": access_token, "token_type": "bearer"}
+async def user_register(form_data:RegisterUser):
+    """注册用户"""
 
 
 # 创建一个User的特殊view
-from ..auth.schemas import UserSchema
-from .models import User
 
 
 def create_create(model, database):
@@ -58,3 +60,4 @@ async def create_superuser(model, database, instance: UserSchema = Body(..., )):
 
 def create_User_View(model, database):
     pass
+

@@ -8,21 +8,39 @@
 @info    :权限先关的schema
 """
 from pydantic import BaseModel
+
+
 class UserSchema(BaseModel):
     id: int
     username: str
     password: str
     is_active: bool
     is_superuser: bool
+
+
 class UserDB(UserSchema):
     pass
+
+
 from pydantic import EmailStr
+
+
 class UserInDb(UserDB):
-    email:EmailStr
+    email: EmailStr
+
 
 class TokenData(BaseModel):
     username: str = None
 
+
 class Token(BaseModel):
     access_token: str
     token_type: str
+
+
+class RegisterUser(BaseModel):
+    """注册用"""
+    username: str
+    password: str
+    nick_name: str
+    email: EmailStr

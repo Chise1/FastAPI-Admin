@@ -10,15 +10,11 @@
 
 from datetime import datetime, timedelta
 from typing import Callable
-
 import jwt
-from fastapi import Depends, FastAPI, HTTPException, status
-from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
+from fastapi import Depends,  HTTPException, status
+from fastapi.security import OAuth2PasswordBearer
 from jwt import PyJWTError
 from passlib.context import CryptContext
-from pydantic import BaseModel
-from sqlalchemy.sql import select
-
 from .schemas import UserDB, TokenData
 from ..databaseManage import AdminDatabase
 from .models import User
@@ -118,7 +114,7 @@ async def get_current_user(token: str = Depends(oauth2_scheme)):
     return user
 
 
-async def get_current_active_user(current_user: User = Depends(get_current_user)):
+async def get_current_active_user(current_user: User = Depends(get_current_user))->User:
     """
     判断是否有效
     :param current_user:

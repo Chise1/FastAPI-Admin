@@ -24,6 +24,9 @@ admin.register_Model(User)
 会生成这样的接口
 ![avatar](doc/1585901894(1).jpg)
 ## update
+## v20200408
+解决无法重复注释basemodel的问题
+优化文档结构
 ### v20200407
 优化view，完成分页功能，去掉了post创建时候需要主键的问题。
 接下来新增权限管理。

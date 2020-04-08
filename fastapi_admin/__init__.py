@@ -9,9 +9,6 @@
 """
 from fastapi import APIRouter
 from typing import Union, List, Any, Set
-from pydantic import BaseModel, Field
-from sqlalchemy import Integer, Boolean
-
 from .auth.views import login, create_create
 from .databaseManage import AdminDatabase
 from .publicDepends.paging_query import get_res_schema
@@ -19,68 +16,9 @@ from .views import create_View
 from typing import Optional
 from .auth.models import User, Group, Permission, UserLog
 from .auth.schemas import Token
-
-
-def create_schema(model, exclude: Optional[List[str]] = None, ) -> (BaseModel, BaseModel):
-    """
-    通过读取model的信息，创建schema
-    :param model:
-    :param exclude:
-    :return:
-    """
-
-    base_model: str = """
-class {}(BaseModel):
-{}
-class {}(BaseModel):
-{}
-    """
-    model_name = model.__name__
-    # mappings为从model获取的相关配置
-    __mappings__ = {}  # {'name':{'field':Field,'type':type,}}
-    for filed in model.__table__.c:
-        filed_name = str(filed).split('.')[-1]
-        if exclude:
-            if exclude.count(filed_name):
-                continue
-        if filed.default:
-            if isinstance(filed.default.arg, str):
-                default_value = '"' + filed.default.arg + '"'
-            # elif isinstance(filed.default.arg,bool):
-            #     default_value = str(filed.default.arg)
-            else:
-                default_value = str(filed.default.arg)
-        elif filed.nullable:
-            default_value = '...'
-        else:
-            default_value = 'None'
-        # 生成的结构： id:int=Field(...,)大概这样的结构
-        # res_field = Field(default_value, description=filed.description)  # Field参数
-        res_field = 'Field({}, description="{}")'.format(default_value, filed.comment)  # Field参数
-
-        if isinstance(filed.type, Integer):
-            tp = filed_name + ':int=' + res_field
-        elif isinstance(filed.type, Boolean):
-            tp = filed_name + ":bool =" + res_field
-        else:
-            tp = filed_name + ':str=' + res_field
-        __mappings__[filed_name] = tp
-    s_fields = ''
-    s_fields_noid = ''
-    for k, v in __mappings__.items():
-        if k != "id":
-            s_fields_noid = s_fields_noid + '    ' + v + '\n'
-        s_fields = s_fields + '    ' + v + '\n'
-    base_model = base_model.format(model_name, s_fields, model_name + "Noid", s_fields_noid)
-    print(base_model)
-    cls_dict = {"BaseModel": BaseModel, "Field": Field}
-    exec(base_model, cls_dict)
-    # 将schema绑定到model
-    schema = cls_dict[model_name]
-    schema_noid = cls_dict[model_name + "Noid"]
-    return schema, schema_noid
-
-
+from .schema_tools import create_schema
+from .config.schemas import BaseConfig
+from .config.models import Config
 class FastAPIAdmin:
     """
     该类为核心类，主要功能是注册Model或者Table，生成对应的schema和路由
@@ -122,16 +60,7 @@ class FastAPIAdmin:
         router.on_event('startup')(self.admin_database.startup)
         router.on_event('shutdown')(self.admin_database.shutdown)
         # 注册login
-        router.post('/token', response_model=Token)(login)
-        # 注册基础的model
-        # self.register_Model(User, need_user=False)
-        schema, schema_noid = create_schema(User)
-        view = create_View(model=User, database=self.database, schema=schema, schema_noid=schema_noid, need_user=False)
-        view.create = create_create(User, self.database)
-        self.register_view(view, prefix="/user", methods=['GET', "Retrieve", "PUT",])
-        self.register_Model(Group, )
-        self.register_Model(Permission, )
-        self.register_Model(UserLog, )
+        self.default_registe()
 
     def register_Model(self, model: Any, view=None,
                        methods: Union[List[str], Set[str]] = ('GET', 'Retrieve', 'POST', 'PUT', 'DELETE'),
@@ -206,4 +135,24 @@ class FastAPIAdmin:
             else:
                 self.__router.get(prefix, )(func)
         else:
-            self.__router.post(prefix, )(func)
+            if res_model:
+                self.__router.post(prefix,response_model=res_model )(func)
+            else:
+                self.__router.post(prefix, )(func)
+    def default_registe(self):
+        """
+        默认需要注释的
+        :return:
+        """
+        # 注册login
+        self.__router.post('/user/login', response_model=Token)(login)
+        schema, schema_noid = create_schema(User)
+        view = create_View(model=User, database=self.database, schema=schema, schema_noid=schema_noid, need_user=False)
+        view.create = create_create(User, self.database)
+        self.register_view(view, prefix="/user", methods=['GET', "Retrieve", "PUT", ])
+        self.register_Model(Group, )
+        self.register_Model(Permission, )
+        self.register_Model(UserLog, )
+        from .config.views import config_update,BaseConfig,email_config_update,EmailConfig
+        self.register_router(config_update,method="PUT",prefix="/config/baseconfig",res_model=BaseConfig)
+        self.register_router(email_config_update, method="PUT", prefix="/config/emailonfig", res_model=EmailConfig)
