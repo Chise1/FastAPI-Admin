@@ -168,7 +168,7 @@ class FastAPIAdmin:
         # self.register_router(create_create,method="POST",prefix="/user/createUser",)
         self.register_router(config_update, method="PUT", prefix="/config/baseconfig", )
         self.register_router(email_config_update, method="PUT", prefix="/config/emailconfig", )
-        baseconfig_func, baseconfig_schema = model_get_func_fetch_one(Config, "BaseConfig",need_user=True)
+        baseconfig_func, baseconfig_schema = model_get_func_fetch_one(Config, "BaseConfig",)
         emailconfig_func, email_config_schema = model_get_func_fetch_one(Config, "EmailConfig",fields=["smtp_host","smtp_port","smtp_email","smtp_email_password"],need_user=True)
         self.register_router(baseconfig_func, method="GET", prefix="/config/baseconfig", res_model=BaseConfig,)
         self.register_router(emailconfig_func, method="GET", prefix="/config/emailconfig", res_model=EmailConfig)
