@@ -21,7 +21,7 @@ class Config(Base,):
     seoIntroduce=Column(String(128),comment="seo介绍")
     seoKwargs=Column(String(128),comment="seo关键词")
     serve_qq=Column(String(16),comment="客服qq")
-    currency=Column(Integer,comment="币种：0人民币，1积分")
+    currency=Column(String,comment="币种",default="人民币")
     ratio=Column(Float,comment="兑换⽐例；（1⼈名币等于多少积分")
     smtp_host=Column(String(32),comment="邮箱ip",nullable=True)
     smtp_port=Column(Integer,comment="邮箱port",nullable=True)
