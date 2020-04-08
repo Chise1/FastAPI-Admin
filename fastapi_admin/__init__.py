@@ -71,7 +71,7 @@ class FastAPIAdmin:
                        schema_noid=None,
                        fields: Union[str, List[str]] = "__all__",
                        list_display: Union[str, List[str]] = "__all__", put_fields: Optional[List[str]] = None,
-                       need_user=False,get_need_user=False, depends=None) -> bool:
+                       need_user=False, get_need_user=False, depends=None) -> bool:
         """
         注册model到路由,
         :param model: sqlalchemy的model
@@ -90,7 +90,7 @@ class FastAPIAdmin:
             schema_noid = __schema_noid
         if not view:
             view = create_View(model=model, database=self.database, schema=schema, schema_noid=schema_noid,
-                               need_user=need_user,get_need_user=get_need_user)
+                               need_user=need_user, get_need_user=get_need_user)
         else:
             view.database = self.database
         # 注册一个专门的蓝图
@@ -120,11 +120,11 @@ class FastAPIAdmin:
             # get_res_model = get_res_schema(view.schema)
             router.get(prefix, tags=tags, )(view.list)
         if methods.count('Retrieve'):
-            router.get(prefix + "/{id}", tags=tags)(view.retrieve)
+            router.get(prefix + "/{id}", tags=tags, )(view.retrieve)
         if methods.count('POST'):
-            router.post(prefix, tags=tags)(view.create)
+            router.post(prefix, tags=tags,)(view.create)
         if methods.count('PUT'):
-            router.put(prefix + "/{id}", tags=tags)(view.update)
+            router.put(prefix, tags=tags,)(view.update)
         if methods.count('DELETE'):
             router.delete(prefix + "/{id}", tags=tags)(view.delete)
         self.__router.include_router(router, prefix='/admin')
@@ -158,17 +158,20 @@ class FastAPIAdmin:
         # 注册login
         self.__router.post('/user/login', response_model=Token)(login)
         schema, schema_noid = create_schema(User)
-        view = create_View(model=User, database=self.database, schema=schema, schema_noid=schema_noid, need_user=True,get_need_user=True)
+        view = create_View(model=User, database=self.database, schema=schema, schema_noid=schema_noid, need_user=True,
+                           get_need_user=True)
         view.create = create_create(User, self.database)
         self.register_view(view, prefix="/user", methods=['GET', "Retrieve", "PUT", "POST"])
-        self.register_Model(Group,need_user=True ,get_need_user=True)
-        self.register_Model(Permission,need_user=True  ,get_need_user=True)
-        self.register_Model(UserLog, need_user=True ,get_need_user=True)
+        self.register_Model(Group, need_user=True, get_need_user=True)
+        self.register_Model(Permission, need_user=True, get_need_user=True)
+        self.register_Model(UserLog, need_user=True, get_need_user=True)
         from .config.views import config_update, BaseConfig, email_config_update, EmailConfig
         # self.register_router(create_create,method="POST",prefix="/user/createUser",)
         self.register_router(config_update, method="PUT", prefix="/config/baseconfig", )
         self.register_router(email_config_update, method="PUT", prefix="/config/emailconfig", )
-        baseconfig_func, baseconfig_schema = model_get_func_fetch_one(Config, "BaseConfig",)
-        emailconfig_func, email_config_schema = model_get_func_fetch_one(Config, "EmailConfig",fields=["smtp_host","smtp_port","smtp_email","smtp_email_password"],need_user=True)
-        self.register_router(baseconfig_func, method="GET", prefix="/config/baseconfig", res_model=BaseConfig,)
+        baseconfig_func, baseconfig_schema = model_get_func_fetch_one(Config, "BaseConfig", )
+        emailconfig_func, email_config_schema = model_get_func_fetch_one(Config, "EmailConfig",
+                                                                         fields=["smtp_host", "smtp_port", "smtp_email",
+                                                                                 "smtp_email_password"], need_user=True)
+        self.register_router(baseconfig_func, method="GET", prefix="/config/baseconfig", res_model=BaseConfig, )
         self.register_router(emailconfig_func, method="GET", prefix="/config/emailconfig", res_model=EmailConfig)

@@ -14,17 +14,6 @@ from sqlalchemy import Column, String, Integer, ForeignKey, DateTime, DECIMAL
 from fastapi_admin.auth.models import Base
 
 
-class AccountBook(Base):
-    """用户账本"""
-    __tablename__ = "adminmanager_accountbook"
-    id = Column(Integer, primary_key=True, index=True)
-    user_id = Column(Integer, ForeignKey("fastapi_auth_user.id"))
-    user = relationship("User", backref="user_logs", )
-    money = Column(DECIMAL, comment="余额(不可提现)")
-    err_money = Column(DECIMAL, comment=" 不可⽤余额(范指冻结⾦额，不可操作)")
-    suc_money = Column(DECIMAL, comment="可提现⾦额(指邀请返利的⾦额，或者其他七七⼋⼋的，反正可以提现)")
-    create_time = Column(DateTime, comment="账本创建时间(⼀般同⽤户信息⼀块写⼊， 系统⾃动初始化)")
-    rate = Column(DECIMAL, comment="费率")
 
 
 class AccountBookLog(Base):
@@ -49,3 +38,17 @@ class Member(Base):
     member_time = Column(DateTime, comment="会员时间，有效时间")
     member_authory = Column(String(64), comment="会员权限(后期按项⽬定)")
     rate = Column(DECIMAL, comment="费率")
+class AccountBook(Base):
+    """用户账本"""
+    __tablename__ = "adminmanager_accountbook"
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("fastapi_auth_user.id"))
+    user = relationship("User", backref="user_logs", )
+    money = Column(DECIMAL, comment="余额(不可提现)")
+    err_money = Column(DECIMAL, comment=" 不可⽤余额(范指冻结⾦额，不可操作)")
+    suc_money = Column(DECIMAL, comment="可提现⾦额(指邀请返利的⾦额，或者其他七七⼋⼋的，反正可以提现)")
+    create_time = Column(DateTime, comment="账本创建时间(⼀般同⽤户信息⼀块写⼊， 系统⾃动初始化)")
+    rate = Column(DECIMAL, comment="费率")
+    member_id=Column()
+    member_id = Column(Integer, ForeignKey("adminmanager_member.id"), comment="会员ID")
+    member = relationship("Member", backref="accountBooks", )

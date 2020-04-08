@@ -15,3 +15,4 @@
 1、 增加针对不同method的生成schema
 2、view改为组装方式，
 3、注意修改depends的传递方式
+4、 注意，post和put要返回规定值

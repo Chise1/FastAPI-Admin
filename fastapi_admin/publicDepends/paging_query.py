@@ -12,6 +12,8 @@ from typing import Dict, List, Optional
 from fastapi import Depends
 from sqlalchemy import select, func
 from fastapi_admin import AdminDatabase
+from pydantic import BaseModel, Field
+
 
 default_page_size = 20
 
@@ -20,8 +22,6 @@ async def paging_query_depend(page_number: int = 1, page_size: int = default_pag
     """分页依赖"""
     return {"page_number": page_number, "page_size": page_size}
 
-
-from pydantic import BaseModel, Field
 
 
 class PagingModel(BaseModel):

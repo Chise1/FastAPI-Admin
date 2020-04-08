@@ -7,7 +7,7 @@
 @Software: PyCharm
 @info    :权限先关的schema
 """
-from pydantic import BaseModel, validator
+from pydantic import BaseModel, validator, Field
 
 
 class UserSchema(BaseModel):
@@ -45,14 +45,15 @@ def is_ascii(s):
 def is_enable_passowrd(s):
     return all((ord(c) < 128 and (ord(c) != 33 and ord(c) != 42 and ord(c) != 37)) for c in s)
 
-
+from typing import Optional
 class RegisterUser(BaseModel):
     """注册用"""
+    id:str=Field(None,)
     username: str
     password: str
     nick_name: str
     email: EmailStr
-
+    obj_guid: Optional[str]=None
     @validator('username')
     def username_match(cls, v, values, **kwargs):
         if not is_ascii(v):
