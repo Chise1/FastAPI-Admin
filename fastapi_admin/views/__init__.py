@@ -19,11 +19,12 @@ from fastapi import Body, Depends
 
 from ..publicDepends.paging_query import paging_query_depend
 
-def get_View(schema, schema_noid, database, need_user=False, **kwargs):
+
+def get_View(schema, schema_noid, database, need_user=False, get_need_user=False, **kwargs):
     class View:
         """该类为抽象类，需要继承并实现相关功能"""
         list_display: Union[List[str], str] = "__all__"
-        methods: Union[List[str], Set[str]] = ('GET', 'Retrieve', 'POST', 'PUT', 'DELETE')
+        methods: Union[List[str], Set[str]] = kwargs['methods']
 
         def __init__(self, model, database, schema, schema_noid, **kwargs):
             """
@@ -57,7 +58,8 @@ def get_View(schema, schema_noid, database, need_user=False, **kwargs):
             """获取类对应要展示的数字,默认为list_display"""
             return self.list_display
 
-        async def list(self, page: Dict[str, int] = Depends(paging_query_depend)):
+        async def list(self, page: Dict[str, int] = Depends(paging_query_depend),
+                       current_user: User = Depends(create_current_active_user(get_need_user))):
             """
             get
             :return:
@@ -79,21 +81,56 @@ def get_View(schema, schema_noid, database, need_user=False, **kwargs):
                 "data": paginate_obj
             }
 
-        async def retrieve(self, id):
+        async def retrieve(self, id,current_user: User = Depends(create_current_active_user(need_user))):
             """返回一个类型的详情"""
             query = self.table.select().where(self.model.id == id)
             return await self.database.fetch_one(query)
 
-        async def delete(self, id):
+        async def delete(self, id,current_user: User = Depends(create_current_active_user(need_user))):
             query = self.table.delete().where(self.model.id == id)
             return await self.database.execute(query)
 
     return View
-def create_View(model, schema, schema_noid=None, database=None, need_user=False, **kwargs):
+
+
+def create_View(model, schema, schema_noid=None, methods: Set[str] = ("GET", "PUT", "POST", "DELETE", "Retrieve"),
+                database=None, need_user=False, get_need_user=False, **kwargs):
     """创建View的工厂方法"""
     if not schema_noid:
         schema_noid = schema
-    return get_View(schema,schema_noid,database,need_user)(model, database, schema, schema_noid)
+    return get_View(schema, schema_noid, database, need_user, methods=methods, get_need_user=get_need_user)(model, database,
+                                                                                                    schema, schema_noid)
+
+
+def method_get_func(model, fields="__all__", need_user=False, **kwargs):
+    """生成一个model的get访问"""
+
+    async def list(page: Dict[str, int] = Depends(paging_query_depend),
+                   user: User = Depends(create_current_active_user(need_user))):
+        """
+        get
+        :return:
+        """
+        table = model.__table__
+        if fields == "__all__":
+            query = table.select().offset((page['page_number'] - 1) * page['page_size']).limit(
+                page['page_size'])  # 第一页，每页20条数据。 默认第一页。
+        else:
+            query = table.select().offset((page['page_number'] - 1) * page['page_size']).limit(
+                page['page_size'])  # 第一页，每页20条数据。 默认第一页。
+        paginate_obj = await AdminDatabase().database.fetch_all(query)
+        query2 = select([func.count(table.c.id)])
+        total_page = await AdminDatabase().database.fetch_val(query2)
+        print("注意需要考虑查询两次的两倍代价")
+        return {
+            "page_count": int(math.ceil(total_page * 1.0 / page['page_size'])),
+            "rows_total": total_page,
+            "page_number": page['page_number'],
+            "page_size": page['page_size'],
+            "data": paginate_obj
+        }
+
+    return list
 
 
 class BaseView:

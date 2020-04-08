@@ -13,21 +13,39 @@ from .models import Config
 from ..auth.depends import create_current_active_user
 from ..databaseManage import AdminDatabase
 from ..auth.models import User
-fastapi_database=AdminDatabase()
+fastapi_database=AdminDatabase().database
 
 async def config_update(instance: BaseConfig = Body(..., ),
                  current_user: User = Depends(create_current_active_user(True))):
     assert current_user.is_superuser,"没有超级用户权限"
     model=Config
     table=Config.__table__
-    query = table.update().where(model.id == 0).values(**dict(instance))
-    return await fastapi_database.execute(query)
+    query = table.update().where(model.id == 1).values(dict(instance))
+    res= await fastapi_database.execute(query)
+    return res
 async def email_config_update(instance:EmailConfig,current_user: User = Depends(create_current_active_user(True))):
     model = Config
     table = Config.__table__
     assert current_user.is_superuser, "没有超级用户权限"
-    query = table.update().where(model.id == 0).values(**dict(instance))
+    query = table.update().where(model.id == 1).values(dict(instance))
     return await fastapi_database.execute(query)
+
+
+async def config_update_get(instance: BaseConfig = Body(..., ),
+                 current_user: User = Depends(create_current_active_user(True))):
+    assert current_user.is_superuser,"没有超级用户权限"
+    model=Config
+    table=Config.__table__
+    query = table.update().where(model.id == 1).values(**dict(instance))
+    return await fastapi_database.execute(query)
+async def email_config_update_get(instance:EmailConfig,current_user: User = Depends(create_current_active_user(True))):
+    model = Config
+    table = Config.__table__
+    assert current_user.is_superuser, "没有超级用户权限"
+    query = table.update().where(model.id == 1).values(**dict(instance))
+    return await fastapi_database.execute(query)
+
+
 # class ConfigView:
 #     """该类为抽象类，需要继承并实现相关功能"""
 #     list_display: Union[List[str], str] = "__all__"

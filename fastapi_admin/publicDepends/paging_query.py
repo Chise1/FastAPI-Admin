@@ -8,11 +8,13 @@
 @info    :分页依赖
 """
 import math
-from typing import Dict, List
+from typing import Dict, List, Optional
 from fastapi import Depends
 from sqlalchemy import select, func
 from fastapi_admin import AdminDatabase
+
 default_page_size = 20
+
 
 async def paging_query_depend(page_number: int = 1, page_size: int = default_page_size) -> Dict[str, int]:
     """分页依赖"""
@@ -36,18 +38,20 @@ def get_res_schema(schema, defalut=None):
     :param defalut:
     :return:
     """
+
     class PagingModel(BaseModel):
         page_count: int
         rows_total: int
         page_number: int
         page_size: int
+
     class ResModel(PagingModel):
         data: List[schema] = Field(defalut, )
 
     return ResModel
 
 
-def page_query(model):
+def page_query(model,):
     """
     分页显示生成器
     :param model:
@@ -67,4 +71,5 @@ def page_query(model):
             "page_size": page['page_size'],
             "data": paginate_obj
         }
+
     return res

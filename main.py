@@ -13,17 +13,17 @@ from fastapi import FastAPI
 from fastapi_admin import FastAPIAdmin
 from settings import SQLALCHEMY_DATABASE_URL
 
-app = FastAPI(debug=False)
+app = FastAPI(debug=True)
 
 admin = FastAPIAdmin(app, SQLALCHEMY_DATABASE_URL)
 # 注册所有需要创建基本方法的Model
 from apps.AdminManager.models import AccountBook, AccountBookLog, Member
 
 # admin.create_database()
-admin.register_Model(AccountBook, need_user=True)
-admin.register_Model(AccountBookLog, need_user=True)
+admin.register_Model(AccountBook, need_user=True,get_need_user=True)
+admin.register_Model(AccountBookLog, need_user=True,get_need_user=True)
 # admin.register_Model(Member, need_user=True)
-admin.register_Model(Member, methods=["GET", "POST"],need_user=True)
+admin.register_Model(Member, methods=["GET", "POST"],need_user=True,get_need_user=True)
 admin.create_database()
 # res_model = get_res_schema(schema=UserSchema)
 # app.get('/test_page',response_model=res_model)(page_query(User,))

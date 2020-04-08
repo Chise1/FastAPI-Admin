@@ -11,14 +11,17 @@ from fastapi import APIRouter
 from typing import Union, List, Any, Set
 from .auth.views import login, create_create, create_superuser
 from .databaseManage import AdminDatabase
-from .publicDepends.paging_query import get_res_schema
-from .views import create_View
+from .publicDepends.paging_query import get_res_schema, page_query
+from .views import create_View, method_get_func
 from typing import Optional
 from .auth.models import User, Group, Permission, UserLog
 from .auth.schemas import Token
 from .schema_tools import create_schema
 from .config.schemas import BaseConfig
 from .config.models import Config
+from .views.method_get import model_get_func_fetch_one
+
+
 class FastAPIAdmin:
     """
     该类为核心类，主要功能是注册Model或者Table，生成对应的schema和路由
@@ -64,9 +67,11 @@ class FastAPIAdmin:
 
     def register_Model(self, model: Any, view=None,
                        methods: Union[List[str], Set[str]] = ('GET', 'Retrieve', 'POST', 'PUT', 'DELETE'),
+                       schema=None,
+                       schema_noid=None,
                        fields: Union[str, List[str]] = "__all__",
                        list_display: Union[str, List[str]] = "__all__", put_fields: Optional[List[str]] = None,
-                       need_user=False, depends=None) -> bool:
+                       need_user=False,get_need_user=False, depends=None) -> bool:
         """
         注册model到路由,
         :param model: sqlalchemy的model
@@ -77,10 +82,15 @@ class FastAPIAdmin:
         :param put_fields: put允许的字段，默认为fields相同
         :return:是否注册成功
         """
-        res_schema, schema_noid = create_schema(model)
+
+        __schema, __schema_noid = create_schema(model)
+        if not schema:
+            schema = __schema
+        if not schema_noid:
+            schema_noid = __schema_noid
         if not view:
-            view = create_View(model=model, database=self.database, schema=res_schema, schema_noid=schema_noid,
-                               need_user=need_user)
+            view = create_View(model=model, database=self.database, schema=schema, schema_noid=schema_noid,
+                               need_user=need_user,get_need_user=get_need_user)
         else:
             view.database = self.database
         # 注册一个专门的蓝图
@@ -131,14 +141,15 @@ class FastAPIAdmin:
         """
         if method == 'GET':
             if res_model:
-                self.__router.get(prefix, response_model=List[res_model])(func)
+                self.__router.get(prefix, response_model=res_model)(func)
             else:
                 self.__router.get(prefix, )(func)
         else:
             if res_model:
-                self.__router.post(prefix,response_model=res_model )(func)
+                self.__router.post(prefix, response_model=res_model)(func)
             else:
                 self.__router.post(prefix, )(func)
+
     def default_registe(self):
         """
         默认需要注释的
@@ -147,15 +158,17 @@ class FastAPIAdmin:
         # 注册login
         self.__router.post('/user/login', response_model=Token)(login)
         schema, schema_noid = create_schema(User)
-        view = create_View(model=User, database=self.database, schema=schema, schema_noid=schema_noid, need_user=False)
+        view = create_View(model=User, database=self.database, schema=schema, schema_noid=schema_noid, need_user=True,get_need_user=True)
         view.create = create_create(User, self.database)
-        self.register_view(view, prefix="/user", methods=['GET', "Retrieve", "PUT" ,"POST"])
-        self.register_Model(Group, )
-        self.register_Model(Permission, )
-        self.register_Model(UserLog, )
-        from .config.views import config_update,BaseConfig,email_config_update,EmailConfig
+        self.register_view(view, prefix="/user", methods=['GET', "Retrieve", "PUT", "POST"])
+        self.register_Model(Group,need_user=True ,get_need_user=True)
+        self.register_Model(Permission,need_user=True  ,get_need_user=True)
+        self.register_Model(UserLog, need_user=True ,get_need_user=True)
+        from .config.views import config_update, BaseConfig, email_config_update, EmailConfig
         # self.register_router(create_create,method="POST",prefix="/user/createUser",)
-        self.register_router(config_update,method="PUT",prefix="/config/baseconfig",res_model=BaseConfig)
-        self.register_router(email_config_update, method="PUT", prefix="/config/emailonfig", res_model=EmailConfig)
-        self.register_router(config_update, method="GET", prefix="/config/baseconfig", res_model=BaseConfig)
-        self.register_router(email_config_update, method="GET", prefix="/config/emailonfig", res_model=EmailConfig)
+        self.register_router(config_update, method="PUT", prefix="/config/baseconfig", )
+        self.register_router(email_config_update, method="PUT", prefix="/config/emailconfig", )
+        baseconfig_func, baseconfig_schema = model_get_func_fetch_one(Config, "BaseConfig",need_user=True)
+        emailconfig_func, email_config_schema = model_get_func_fetch_one(Config, "EmailConfig",fields=["smtp_host","smtp_port","smtp_email","smtp_email_password"],need_user=True)
+        self.register_router(baseconfig_func, method="GET", prefix="/config/baseconfig", res_model=BaseConfig,)
+        self.register_router(emailconfig_func, method="GET", prefix="/config/emailconfig", res_model=EmailConfig)

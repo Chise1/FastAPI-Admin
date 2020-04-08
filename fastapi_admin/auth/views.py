@@ -11,8 +11,9 @@ from datetime import timedelta
 from fastapi import Depends, HTTPException, status, Body
 from fastapi.security import OAuth2PasswordRequestForm
 from fastapi_admin.auth.depends import authenticate_user, create_access_token, get_current_active_user, \
-    get_password_hash
+    get_password_hash, create_current_active_user
 from fastapi_admin.settings import ACCESS_TOKEN_EXPIRE_MINUTES
+from .models import User
 from ..auth.schemas import UserSchema, RegisterUser
 
 async def login(form_data: OAuth2PasswordRequestForm = Depends()):
@@ -35,13 +36,13 @@ async def login(form_data: OAuth2PasswordRequestForm = Depends()):
     return {"access_token": access_token, "token_type": "bearer"}
 async def user_register(form_data:RegisterUser):
     """注册用户"""
-
+    pass
 
 # 创建一个User的特殊view
 
 
 def create_create(model, database):
-    async def create(instance: UserSchema = Body(..., )):
+    async def create(instance: UserSchema = Body(..., ),current_user: User = Depends(create_current_active_user(True))):
         instance.password = get_password_hash(instance.password)
         query = model.__table__.insert().values(dict(instance))
         return await database.execute(query)
