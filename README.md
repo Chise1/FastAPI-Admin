@@ -24,7 +24,10 @@ admin.register_Model(User)
 会生成这样的接口
 ![avatar](doc/1585901894(1).jpg)
 ## update
-## v20200408
+### v20200408
+新增针对model设置的get方法
+对view的list增加了全局分页控制
+### v20200408
 解决无法重复注释basemodel的问题
 优化文档结构
 ### v20200407
