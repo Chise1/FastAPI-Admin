@@ -9,7 +9,7 @@
 """
 from fastapi import APIRouter
 from typing import Union, List, Any, Set
-from .auth.views import login, create_create
+from .auth.views import login, create_create, create_superuser
 from .databaseManage import AdminDatabase
 from .publicDepends.paging_query import get_res_schema
 from .views import create_View
@@ -149,10 +149,13 @@ class FastAPIAdmin:
         schema, schema_noid = create_schema(User)
         view = create_View(model=User, database=self.database, schema=schema, schema_noid=schema_noid, need_user=False)
         view.create = create_create(User, self.database)
-        self.register_view(view, prefix="/user", methods=['GET', "Retrieve", "PUT", ])
+        self.register_view(view, prefix="/user", methods=['GET', "Retrieve", "PUT" ,"POST"])
         self.register_Model(Group, )
         self.register_Model(Permission, )
         self.register_Model(UserLog, )
         from .config.views import config_update,BaseConfig,email_config_update,EmailConfig
+        # self.register_router(create_create,method="POST",prefix="/user/createUser",)
         self.register_router(config_update,method="PUT",prefix="/config/baseconfig",res_model=BaseConfig)
         self.register_router(email_config_update, method="PUT", prefix="/config/emailonfig", res_model=EmailConfig)
+        self.register_router(config_update, method="GET", prefix="/config/baseconfig", res_model=BaseConfig)
+        self.register_router(email_config_update, method="GET", prefix="/config/emailonfig", res_model=EmailConfig)
