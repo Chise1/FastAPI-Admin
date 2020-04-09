@@ -10,12 +10,13 @@
 from datetime import datetime
 from typing import List
 from pydantic import BaseModel, Field
-from sqlalchemy import Integer, Boolean, String, Float, DateTime, ColumnDefault
+from sqlalchemy import Integer, Boolean, String, Float, DateTime, Text, DATE
 from typing import Optional
+from datetime import datetime
 
 
 def get_model_str(model, exclude: Optional[List[str]] = None,
-                       fields: Optional[List[str]] = None):
+                  fields: Optional[List[str]] = None):
     # mappings为从model获取的相关配置
     __mappings__ = {}  # {'name':{'field':Field,'type':type,}}
     for filed in model.__table__.c:
@@ -54,6 +55,8 @@ def get_model_str(model, exclude: Optional[List[str]] = None,
             max_length = filed.type.length
             tp = filed_name + ':str=' + 'Field({}, description="{}",max_length={})'.format(default_value, filed.comment,
                                                                                            max_length)
+        elif isinstance(filed.type, DateTime):
+            tp = filed_name + ':datetime=' + 'Field({}, description="{}")'.format(default_value, filed.comment )
         else:
             tp = filed_name + ':str=' + res_field
         __mappings__[filed_name] = tp
@@ -62,8 +65,9 @@ def get_model_str(model, exclude: Optional[List[str]] = None,
         s_fields = s_fields + '    ' + v + '\n'
     return s_fields
 
+
 def __create_one_schema(model, default_model_name=None, exclude: Optional[List[str]] = None,
-                        fields: Optional[List[str]] = None,base_model:str=None) -> BaseModel:
+                        fields: Optional[List[str]] = None, base_model: str = None) -> BaseModel:
     """
     通过读取model的信息，创建schema
     :param model:
@@ -80,9 +84,9 @@ class {}(BaseModel):
     else:
         model_name = default_model_name
     # mappings为从model获取的相关配置
-    s_fields=get_model_str(model,exclude,fields)
+    s_fields = get_model_str(model, exclude, fields)
     base_model = base_model.format(model_name, s_fields)
-    cls_dict = {"BaseModel": BaseModel, "Field": Field}
+    cls_dict = {"BaseModel": BaseModel, "Field": Field,"datetime":datetime}
     exec(base_model, cls_dict)
     # 将schema绑定到model
     schema = cls_dict[model_name]
@@ -127,7 +131,7 @@ def create_post_schema(model, default_model_name=None, exclude: Optional[List[st
 
 
 def create_get_page_schema(model, default_model_name=None, exclude: Optional[List[str]] = None,
-                       fields: Optional[List[str]] = None) -> BaseModel:
+                           fields: Optional[List[str]] = None) -> BaseModel:
     """
     通过读取model的信息，创建schema列表
     :param model:
@@ -148,9 +152,9 @@ class {0}PagingModel(BaseModel):
         model_name = model.__name__
     else:
         model_name = default_model_name
-    s_fields=get_model_str(model,exclude,fields)
+    s_fields = get_model_str(model, exclude, fields)
     base_model = base_model.format(model_name, s_fields)
-    cls_dict = {"BaseModel": BaseModel, "Field": Field}
+    cls_dict = {"BaseModel": BaseModel, "Field": Field,"datetime":datetime}
     exec(base_model, cls_dict)
     # 将schema绑定到model
     schema = cls_dict[model_name + "PagingModel"]
