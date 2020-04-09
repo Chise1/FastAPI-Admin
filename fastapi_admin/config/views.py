@@ -21,15 +21,15 @@ async def config_update(instance: BaseConfig = Body(..., ),
     model=Config
     table=Config.__table__
     query = table.update().where(model.id == 1).values(dict(instance))
-    res= await fastapi_database.execute(query)
-    return res
+    await fastapi_database.execute(query)
+    return instance
 async def email_config_update(instance:EmailConfig,current_user: User = Depends(create_current_active_user(True))):
     model = Config
     table = Config.__table__
     assert current_user.is_superuser, "没有超级用户权限"
     query = table.update().where(model.id == 1).values(dict(instance))
-    return await fastapi_database.execute(query)
-
+    await fastapi_database.execute(query)
+    return instance
 
 async def config_update_get(instance: BaseConfig = Body(..., ),
                  current_user: User = Depends(create_current_active_user(True))):

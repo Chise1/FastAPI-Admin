@@ -116,7 +116,7 @@ class FastAPIAdmin:
         if not methods:
             methods = view.methods
         if methods.count('GET'):
-            print("注意，可能需要设置返回model")
+            # print("注意，可能需要设置返回model")
             # get_res_model = get_res_schema(view.schema)
             router.get(prefix, tags=tags, )(view.list)
         if methods.count('Retrieve'):
@@ -169,7 +169,7 @@ class FastAPIAdmin:
         # self.register_router(create_create,method="POST",prefix="/user/createUser",)
         self.register_router(config_update, method="PUT", prefix="/config/baseconfig", )
         self.register_router(email_config_update, method="PUT", prefix="/config/emailconfig", )
-        baseconfig_func, baseconfig_schema = model_get_func_fetch_one(Config, "BaseConfig", )
+        baseconfig_func, baseconfig_schema = model_get_func_fetch_one(Config, "BaseConfig",need_user=False )
         emailconfig_func, email_config_schema = model_get_func_fetch_one(Config, "EmailConfig",
                                                                          fields=["smtp_host", "smtp_port", "smtp_email",
                                                                                  "smtp_email_password"], need_user=True)
