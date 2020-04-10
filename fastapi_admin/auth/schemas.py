@@ -69,3 +69,12 @@ class RegisterUser(BaseModel):
         if len(v) < 8:
             raise ValueError("密码尾数不能少于8")
         return v
+
+class ModifyPassword(BaseModel):
+    new_password:str
+
+
+class ModifyBaseInfo(BaseModel):
+    qq:str
+    email:EmailStr
+    nick_name:str

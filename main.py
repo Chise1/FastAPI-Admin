@@ -36,6 +36,22 @@ admin.register_Model(Member, methods=["GET", "POST"],need_user=True,get_need_use
 admin.create_database()
 # res_model = get_res_schema(schema=UserSchema)
 # app.get('/test_page',response_model=res_model)(page_query(User,))
+from apps.AdminManager.views import router
+
+app.include_router(router)
+
+from fastapi_admin import AdminDatabase
+from fastapi_admin.auth.models import  User
+@app.get('/register_user',deprecated=True)
+async  def start():
+    """初始化用户信息的，请勿调用"""
+    users_query=User.__table__.select()
+    default_member=Member(member_name="默认会员",rate=0)
+    default_member.id= await AdminDatabase().database.execute(Member.__table__.insert().values(member_name="默认会员",rate='0'))
+    users=await AdminDatabase().database.fetch_all(users_query)
+    for user in users:
+        await AdminDatabase().database.execute( AccountBook.__table__.insert().values(user_id=user.id,member_id=default_member.id))
+    return {"code":0}
 
 if __name__ == "__main__":
     import uvicorn

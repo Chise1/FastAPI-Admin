@@ -8,11 +8,9 @@
 @info    :生成get相关的方法
 """
 from typing import List, Optional, Callable
-
+from ..auth.models import User
 from fastapi import Depends
 from pydantic import BaseModel
-from sqlalchemy.sql import select
-
 from .. import page_query, AdminDatabase
 from ..auth.depends import create_current_active_user
 from ..schema_tools import create_get_page_schema, create_get_schema
@@ -27,7 +25,6 @@ def model_get_list_func(model, default_model_name=None, exclude: Optional[List[s
 
 
 
-from ..auth.models import User
 def model_get_func_fetch_one(model, default_model_name=None, exclude: Optional[List[str]] = None,
                    fields: Optional[List[str]] = None,res_func_name=None,need_user=True) -> (Callable, BaseModel):
     """根据model生成get"""

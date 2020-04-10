@@ -12,8 +12,10 @@ from typing import Dict, List, Optional
 from fastapi import Depends
 from sqlalchemy import select, func
 from fastapi_admin import AdminDatabase
+from ..auth.models import User
 from pydantic import BaseModel, Field
 
+from fastapi_admin.auth.depends import create_current_active_user
 
 default_page_size = 20
 
@@ -21,7 +23,6 @@ default_page_size = 20
 async def paging_query_depend(page_number: int = 1, page_size: int = default_page_size) -> Dict[str, int]:
     """分页依赖"""
     return {"page_number": page_number, "page_size": page_size}
-
 
 
 class PagingModel(BaseModel):
@@ -39,19 +40,13 @@ def get_res_schema(schema, defalut=None):
     :return:
     """
 
-    class PagingModel(BaseModel):
-        page_count: int
-        rows_total: int
-        page_number: int
-        page_size: int
-
     class ResModel(PagingModel):
         data: List[schema] = Field(defalut, )
 
     return ResModel
 
 
-def page_query(model,):
+def page_query(model, ):
     """
     分页显示生成器
     :param model:
@@ -72,4 +67,36 @@ def page_query(model,):
             "data": paginate_obj
         }
 
+    return res
+
+
+def page_base_query(model, default_query=None,need_user=False):
+    """
+    分页显示生成器，可以自定义query
+    :param model:
+    :return:
+    """
+    async def res(page: Dict[str, int] = Depends(paging_query_depend),current_user: User = Depends(create_current_active_user(need_user))):
+        if str(default_query):
+            query = default_query.offset((page['page_number'] - 1) * page['page_size']).limit(
+                page['page_size'])  # 第一页，每页20条数据。 默认第一页。
+        else:
+            query = model.__table__.select().offset((page['page_number'] - 1) * page['page_size']).limit(
+                page['page_size'])  # 第一页，每页20条数据。 默认第一页。
+
+        print(query)
+        paginate_obj = await AdminDatabase().database.fetch_all(query)
+        for i in paginate_obj:
+            print(i)
+        query2 = select([func.count(model.__table__.c.id)])
+        total_page = await AdminDatabase().database.fetch_val(query2)
+        res_obj= {
+            "page_count": int(math.ceil(total_page * 1.0 / page['page_size'])),
+            "rows_total": total_page,
+            "page_number": page['page_number'],
+            "page_size": page['page_size'],
+            "data": paginate_obj
+        }
+        print(res_obj)
+        return res_obj
     return res

@@ -21,7 +21,7 @@ class User(Base):
     id = Column(Integer, primary_key=True, index=True)
     username = Column(String(150), unique=True, index=True, comment="用户名")
     password = Column(String(128), comment="密码")
-    obj_guid = Column(Integer, comment="系统生成，不可重复，证书", unique=True)
+    obj_guid = Column(String(16), comment="系统生成，不可重复，证书", unique=True)
     nick_name = Column(String(64), comment="昵称", )
     qq = Column(String(16), comment="qq")
     email = Column(String(64), nullable=True, unique=True)

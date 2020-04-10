@@ -44,7 +44,7 @@ async def user_register(form_data: RegisterUser):
 
 
 # 创建一个User的特殊view
-def createGuid(num: int):
+def createGuid(num: int)->str:
     guid = ''
     for i in range(1, num):
         start = 0 if (i % 2) == 0 else 1

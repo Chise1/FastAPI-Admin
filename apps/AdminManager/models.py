@@ -7,13 +7,12 @@
 @Software: PyCharm
 @info    :
 """
+import datetime
 
 from sqlalchemy.orm import relationship
-from sqlalchemy import Column, String, Integer, ForeignKey, DateTime, DECIMAL
+from sqlalchemy import Column, String, Integer, ForeignKey, DateTime, DECIMAL, Text
 
 from fastapi_admin.auth.models import Base
-
-
 
 
 class AccountBookLog(Base):
@@ -30,12 +29,14 @@ class AccountBookLog(Base):
 
 
 class Member(Base):
-    """会员"""
+    """会员列表"""
     __tablename__ = "adminmanager_member"
     id = Column(Integer, primary_key=True, index=True)
-    member_name = Column(String(64), comment="会员名称")
-    member_money = Column(DECIMAL, comment="会员金额")
-    member_time = Column(DateTime, comment="会员时间，有效时间")
+    member_name = Column(String(64), comment="套餐名称")
+    member_money = Column(DECIMAL, comment="购买价格")
+    member_rate_money = Column(DECIMAL, comment="折扣价格")
+    remark=Column(Text,comment="备注")
+    member_time = Column(DateTime, comment="会员时间，有效时间",nullable=True)
     member_authory = Column(String(64), comment="会员权限(后期按项⽬定)")
     rate = Column(DECIMAL, comment="费率")
 class AccountBook(Base):
@@ -44,11 +45,11 @@ class AccountBook(Base):
     id = Column(Integer, primary_key=True, index=True)
     user_id = Column(Integer, ForeignKey("fastapi_auth_user.id"))
     user = relationship("User", backref="user_logs", )
-    money = Column(DECIMAL, comment="余额(不可提现)")
-    err_money = Column(DECIMAL, comment=" 不可⽤余额(范指冻结⾦额，不可操作)")
-    suc_money = Column(DECIMAL, comment="可提现⾦额(指邀请返利的⾦额，或者其他七七⼋⼋的，反正可以提现)")
-    create_time = Column(DateTime, comment="账本创建时间(⼀般同⽤户信息⼀块写⼊， 系统⾃动初始化)")
-    rate = Column(DECIMAL, comment="费率")
-    member_id=Column()
-    member_id = Column(Integer, ForeignKey("adminmanager_member.id"), comment="会员ID")
+    money = Column(DECIMAL, comment="余额(不可提现)",default=0)
+    err_money = Column(DECIMAL, comment=" 不可⽤余额(范指冻结⾦额，不可操作)",default=0)
+    suc_money = Column(DECIMAL, comment="可提现⾦额(指邀请返利的⾦额，或者其他七七⼋⼋的，反正可以提现)",default=0)
+    create_time = Column(DateTime, comment="账本创建时间(⼀般同⽤户信息⼀块写⼊， 系统⾃动初始化)",default=datetime.datetime.now)
+    rate = Column(DECIMAL, comment="费率",default=0)
+    member_id = Column(Integer, ForeignKey("adminmanager_member.id"), comment="会员ID",default=0)
     member = relationship("Member", backref="accountBooks", )
+
