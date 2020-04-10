@@ -30,7 +30,7 @@ from apps.AdminManager.models import AccountBook, AccountBookLog, Member
 
 # admin.create_database()
 admin.register_Model(AccountBook, need_user=True,get_need_user=True)
-admin.register_Model(AccountBookLog, need_user=True,get_need_user=True)
+admin.register_Model(AccountBookLog,methods=['GET'], need_user=True,get_need_user=True)
 # admin.register_Model(Member, need_user=True)
 admin.register_Model(Member, methods=["GET", "POST"],need_user=True,get_need_user=True)
 admin.create_database()
@@ -39,5 +39,4 @@ admin.create_database()
 
 if __name__ == "__main__":
     import uvicorn
-
     uvicorn.run(app, host="0.0.0.0", port=8031)

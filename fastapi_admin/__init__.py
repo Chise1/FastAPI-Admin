@@ -164,7 +164,7 @@ class FastAPIAdmin:
         self.register_view(view, prefix="/user", methods=['GET', "Retrieve", "PUT", "POST"])
         self.register_Model(Group, need_user=True, get_need_user=True)
         self.register_Model(Permission, need_user=True, get_need_user=True)
-        self.register_Model(UserLog, need_user=True, get_need_user=True)
+        self.register_Model(UserLog,methods=['GET'], need_user=True, get_need_user=True)
         from .config.views import config_update, BaseConfig, email_config_update, EmailConfig
         # self.register_router(create_create,method="POST",prefix="/user/createUser",)
         self.register_router(config_update, method="PUT", prefix="/config/baseconfig", )
