@@ -53,6 +53,6 @@ async def modify_base_info(new_info: ModifyBaseInfo, current_user: User = Depend
     return new_info
 
 
-router.get('/user/list',tags=['user'], response_model=UserListModel, description="获取用户列表")(user_list)
-router.patch('/user/updateInfo',tags=['user'], response_model=ModifyBaseInfo, description="更新个人数据")(modify_base_info)
-router.patch('/user/modifyPassword',tags=['user'], description="修改密码")(modify_password)
+router.get('/user/list',tags=['user'], response_model=UserListModel, summary="获取用户列表")(user_list)
+router.patch('/user/updateInfo',tags=['user'], response_model=ModifyBaseInfo, summary="更新个人数据")(modify_base_info)
+router.patch('/user/modifyPassword',tags=['user'], description="修改密码",summary="修改个人密码")(modify_password)
