@@ -37,8 +37,10 @@ async def modify_password(new_password: ModifyPassword, current_user: User = Dep
     :return:
     """
     hash_password = get_password_hash(new_password.new_password)
-    query = User.__table__.update().values({"password": hash_password}).where(current_user.id == id)
-    await AdminDatabase().database.execute(query)
+    query = User.__table__.update().values({"password": hash_password}).where(User.id == current_user.id)
+    print(query)
+    res=await AdminDatabase().database.execute(query)
+    print(res)
     return {"code": 200, "message": "success"}
 
 
