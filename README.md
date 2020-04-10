@@ -1,6 +1,6 @@
 # FastAPI-Admin
 实现fastapi的前后端分离的后台管理系统
-
+## 等基本功能开发完全的时候，会出专门的教程文档
 ## 安装
 ```shell script
 python setup.py install
