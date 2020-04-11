@@ -16,12 +16,12 @@ class Config(Base,):
     """fastapi_config_config"""
     __tablename__="fastapi_config_config"
     id = Column(Integer, primary_key=True, index=True)
-    web_name=Column(String(64),comment="网站标题",)
+    web_name=Column(String(64),comment="网站标题",nullable=False)
     subTitle=Column(String(64),comment="副标题")
     seoIntroduce=Column(String(128),comment="seo介绍")
     seoKwargs=Column(String(128),comment="seo关键词")
     serve_qq=Column(String(16),comment="客服qq")
-    currency=Column(String,comment="币种",default="人民币")
+    currency=Column(String,comment="币种",default="RNY")
     ratio=Column(Float,comment="兑换⽐例；（1⼈名币等于多少积分")
     smtp_host=Column(String(32),comment="邮箱ip",nullable=True)
     smtp_port=Column(Integer,comment="邮箱port",nullable=True)
