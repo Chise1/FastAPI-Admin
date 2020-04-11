@@ -44,7 +44,7 @@ def get_View(schema, schema_noid, database, need_user=False, get_need_user=False
             for k, v in kwargs.items():
                 setattr(self, k, v)
 
-        async def update(self,  instance: schema = Body(..., ),
+        async def update(self, instance: schema = Body(..., ),
                          current_user: User = Depends(create_current_active_user(need_user))):
 
             query = self.table.update().where(self.model.id == instance.id).values(**dict(instance))
@@ -56,9 +56,9 @@ def get_View(schema, schema_noid, database, need_user=False, get_need_user=False
                          current_user: User = Depends(create_current_active_user(need_user))):
 
             query = self.table.insert().values(dict(instance))
-            res_id=await database.execute(query)
-            res=dict(instance)
-            res.update({'id':res_id})
+            res_id = await database.execute(query)
+            res = dict(instance)
+            res.update({'id': res_id})
             return res
 
         def get_list_display(self) -> List[str]:
@@ -143,24 +143,33 @@ def method_get_func(model, fields="__all__", need_user=False, **kwargs):
     return list
 
 
-def get_view_v2(model:list, params_dict:dict, ):
+def get_view_v2(model: list, params_dict: dict, ):
     """升级版获取view"""
-    #注意：如果model是一个列表，那么根据model列表生成一个总的字段。
-    params_dict = {
-        "GET": {
-            "description": "",  # 接口描述
-            "name":"接口名称",
-            "need_user":False,
-            "fields": [],#默认为所有字段，如果和exclude都为空则为所有字段
-            "exclude": {
-                "id": {
-                    "can_null": True,
-                    "description": "abc",#自带描述
-                    "type": "",#schema的默认类型
-                    "default": object,  # 也可以是None
-                }
-            },
-            "sql": object,  # 也可以是字符串,也可以是sqlalchemy.sql，默认为fetchall，
-            "use_page":True,#是否启动page分页功能，如果启动分页功能按照分页功能的方式显示，如果不是，则会获取第一条，所以一定要自己写sql
-        }
-    }
+    # 注意：如果model是一个列表，那么根据model列表生成一个总的字段。
+    pass
+    # params_dict = {
+    #     "GET": {
+    #         "description": "",  # 接口描述
+    #         "name": "接口名称",
+    #         "need_user": False,
+    #         "fields": {
+    #             "id": {
+    #                 "can_null": True,
+    #                 "description": "abc",  # 自带描述
+    #                 "type": "",  # schema的默认类型
+    #                 "default": object,  # 也可以是None
+    #             }
+    #         },
+    #         "sql": object,  # 也可以是字符串,也可以是sqlalchemy.sql，默认为fetchall，
+    #         "use_page": True,  # 是否启动page分页功能，如果启动分页功能按照分页功能的方式显示，如果不是，则会获取第一条，所以一定要自己写sql
+    #     }
+    # }
+    #
+    # for method in params_dict:
+    #     if method == 'GET':
+    #         config = params_dict['GET']
+    #         method_description = config.get('description', None)
+    #         method_name = config.get('name', None)
+    #         method_need_user = config.get('need_user', False)
+    #         for key,values in config.get('fields').items():
+    #

@@ -11,6 +11,7 @@
 from fastapi import FastAPI
 from starlette.middleware.cors import CORSMiddleware
 
+from apps.WxSh.models import ServiceProviders, BusinessManager
 from fastapi_admin import FastAPIAdmin
 from settings import SQLALCHEMY_DATABASE_URL
 # CORS
@@ -33,6 +34,8 @@ admin.register_Model(AccountBook, need_user=True,get_need_user=True)
 admin.register_Model(AccountBookLog,methods=['GET'], need_user=True,get_need_user=True)
 # admin.register_Model(Member, need_user=True)
 admin.register_Model(Member, methods=["GET", "POST","DELETE","PUT"],need_user=True,get_need_user=True)
+admin.register_Model(ServiceProviders,)
+admin.register_Model(BusinessManager)
 admin.create_database()
 # res_model = get_res_schema(schema=UserSchema)
 # app.get('/test_page',response_model=res_model)(page_query(User,))
@@ -52,6 +55,7 @@ async  def start():
     for user in users:
         await AdminDatabase().database.execute( AccountBook.__table__.insert().values(user_id=user.id,member_id=default_member.id))
     return {"code":0}
+
 
 if __name__ == "__main__":
     import uvicorn

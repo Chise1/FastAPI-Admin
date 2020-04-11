@@ -90,7 +90,7 @@ class {}(BaseModel):
     cls_dict = {"BaseModel": BaseModel, "Field": Field,"datetime":datetime,"date":date}
     exec(base_model, cls_dict)
     # 将schema绑定到model
-
+    print(base_model)
     schema = cls_dict[model_name]
     return schema
 
@@ -158,5 +158,7 @@ class {0}PagingModel(BaseModel):
     cls_dict = {"BaseModel": BaseModel, "Field": Field,"datetime":datetime,"date":date}
     exec(base_model, cls_dict)
     # 将schema绑定到model
+    print(base_model)
     schema = cls_dict[model_name + "PagingModel"]
     return schema
+
