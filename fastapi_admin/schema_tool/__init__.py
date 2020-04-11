@@ -24,31 +24,21 @@ from sqlalchemy import Integer, Boolean, String, Float, DateTime, Text, DATE, Da
 from typing import Optional
 from datetime import datetime
 
-
-def get_model_str(model, fields: dict):
-    # mappings为从model获取的相关配置
-    __mappings__ = {}  # {'name':{'field':Field,'type':type,}}
-    for filed in model.__table__.c:
-        filed_name = str(filed).split('.')[-1]
-        filed_param = fields.get(filed_name,None)
-        if not filed_param:
-            continue
-        if not filed.nullable:
-            default_value = 'None'
-        elif filed.default or filed.default == 0:
-            if isinstance(filed.default.arg, str):
-                default_value = '"' + filed.default.arg + '"'
-            elif isinstance(filed.type, DateTime):
-                default_value = '"' + str(filed.default.arg(filed)) + '"'
-            elif isinstance(filed.type, Date):
-                default_value = '"' + str(filed.default.arg(filed)) + '"'
-            else:
-                default_value = str(filed.default.arg)
+def get_field_default_value(filed)->str:
+    if filed.default is not None:
+        if isinstance(filed.default.arg, str):
+            default_value = '"' + filed.default.arg + '"'
+        elif callable(filed.default.arg):
+            default_value = '"' + str(filed.default.arg(filed)) + '"'
         else:
-            default_value = 'None'
-    # 生成的结构： id:int=Field(...,)大概这样的结构
-    # res_field = Field(default_value, description=filed.description)  # Field参数
-    res_field = 'Field({}, description="{}")'.format(default_value, filed.comment)  # Field参数
+            default_value = str(filed.default.arg)
+    elif filed.nullable:
+        default_value = 'None'
+    else:
+        default_value = '...'
+    return default_value
+
+def get_field_tp(filed,filed_name,res_field,default_value):
     if isinstance(filed.type, Integer):
         tp = filed_name + ':int=' + res_field
     elif isinstance(filed.type, Float):
@@ -57,7 +47,8 @@ def get_model_str(model, fields: dict):
         tp = filed_name + ":bool =" + res_field
     elif isinstance(filed.type, String):
         max_length = filed.type.length
-        tp = filed_name + ':str=' + 'Field({}, description="{}",max_length={})'.format(default_value, filed.comment,
+        tp = filed_name + ':str=' + 'Field({}, description="{}",max_length={})'.format(default_value,
+                                                                                       filed.comment,
                                                                                        max_length)
     elif isinstance(filed.type, DateTime):
         tp = filed_name + ':datetime=' + 'Field({}, description="{}")'.format(default_value, filed.comment)
@@ -65,13 +56,29 @@ def get_model_str(model, fields: dict):
         tp = filed_name + ':date=' + 'Field({}, description="{}")'.format(default_value, filed.comment)
     else:
         tp = filed_name + ':str=' + res_field
-    __mappings__[filed_name] = tp
+    return tp
+def get_field_comment(field):
+    return field.comment
+def get_model_str(model, fields: list):
+    # mappings为从model获取的相关配置
+    __mappings__ = {}  # {'name':{'field':Field,'type':type,}}
+    for filed in model.__table__.c:
+        filed_name = str(filed).split('.')[-1]
+        for key in fields:
+            if isinstance(key, str) and key == filed_name:
+                default_value=get_field_default_value(filed)
+                comment=get_field_comment(filed)
+                res_field = 'Field({}, description="{}")'.format(default_value, comment)  # Field参数
 
-
-s_fields = ''
-for k, v in __mappings__.items():
-    s_fields = s_fields + '    ' + v + '\n'
-return s_fields
+                __mappings__[filed_name] = get_field_tp(filed,filed_name,res_field,default_value)
+                s_fields = ''
+                for k, v in __mappings__.items():
+                    s_fields = s_fields + '    ' + v + '\n'
+                return s_fields
+            elif isinstance(key,dict) and key.get(filed_name):
+                pass
+            else:
+                pass
 
 
 def create_schema(model, fields: dict):
@@ -86,7 +93,7 @@ class {}(BaseModel):
 {}
     """
 
-    s_fields = get_model_str(model, exclude, fields)
+    s_fields = get_model_str(model, fields)
     base_model = base_model.format(model_name, s_fields)
     cls_dict = {"BaseModel": BaseModel, "Field": Field, "datetime": datetime, "date": date}
     exec(base_model, cls_dict)
