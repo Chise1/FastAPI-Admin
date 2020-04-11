@@ -19,7 +19,7 @@ from .auth.schemas import Token
 from .schema_tools import create_schema
 from .config.schemas import BaseConfig
 from .config.models import Config
-from .views.method_get import model_get_func_fetch_one
+from .views.methods_get import model_get_func_fetch_one
 
 
 class FastAPIAdmin:
@@ -122,9 +122,9 @@ class FastAPIAdmin:
         if methods.count('Retrieve'):
             router.get(prefix + "/{id}", tags=tags, )(view.retrieve)
         if methods.count('POST'):
-            router.post(prefix, tags=tags,)(view.create)
+            router.post(prefix, tags=tags, )(view.create)
         if methods.count('PUT'):
-            router.put(prefix, tags=tags,)(view.update)
+            router.put(prefix, tags=tags, )(view.update)
         if methods.count('DELETE'):
             router.delete(prefix + "/{id}", tags=tags)(view.delete)
         self.__router.include_router(router, prefix='/admin')
@@ -161,15 +161,17 @@ class FastAPIAdmin:
         view = create_View(model=User, database=self.database, schema=schema, schema_noid=schema_noid, need_user=True,
                            get_need_user=True)
         view.create = create_create(User, self.database)
-        self.register_view(view, prefix="/user", methods=['GET', "Retrieve", "PUT", "POST"])
+        # user_list,user_list model_get_func_fetch_one
+        # view.delete=
+        # self.register_view(view, prefix="/user", methods=['GET', "Retrieve", "PUT", "POST",'DELETE'])
         self.register_Model(Group, need_user=True, get_need_user=True)
         self.register_Model(Permission, need_user=True, get_need_user=True)
-        self.register_Model(UserLog,methods=['GET'], need_user=True, get_need_user=True)
+        self.register_Model(UserLog, methods=['GET'], need_user=True, get_need_user=True)
         from .config.views import config_update, BaseConfig, email_config_update, EmailConfig
         # self.register_router(create_create,method="POST",prefix="/user/createUser",)
         self.register_router(config_update, method="PUT", prefix="/config/baseconfig", )
         self.register_router(email_config_update, method="PUT", prefix="/config/emailconfig", )
-        baseconfig_func, baseconfig_schema = model_get_func_fetch_one(Config, "BaseConfig",need_user=False )
+        baseconfig_func, baseconfig_schema = model_get_func_fetch_one(Config, "BaseConfig", need_user=False)
         emailconfig_func, email_config_schema = model_get_func_fetch_one(Config, "EmailConfig",
                                                                          fields=["smtp_host", "smtp_port", "smtp_email",
                                                                                  "smtp_email_password"], need_user=True)

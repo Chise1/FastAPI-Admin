@@ -32,7 +32,7 @@ from apps.AdminManager.models import AccountBook, AccountBookLog, Member
 admin.register_Model(AccountBook, need_user=True,get_need_user=True)
 admin.register_Model(AccountBookLog,methods=['GET'], need_user=True,get_need_user=True)
 # admin.register_Model(Member, need_user=True)
-admin.register_Model(Member, methods=["GET", "POST"],need_user=True,get_need_user=True)
+admin.register_Model(Member, methods=["GET", "POST","DELETE","PUT"],need_user=True,get_need_user=True)
 admin.create_database()
 # res_model = get_res_schema(schema=UserSchema)
 # app.get('/test_page',response_model=res_model)(page_query(User,))

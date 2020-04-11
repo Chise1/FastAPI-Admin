@@ -79,3 +79,6 @@ async def create_superuser(model, database, instance: UserSchema = Body(..., )):
 
 def create_User_View(model, database):
     pass
+# async def get_user
+#
+# async def delete_user(model,)

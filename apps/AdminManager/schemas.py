@@ -30,3 +30,4 @@ class UserListModel(PagingModel):
 
 from fastapi_admin.schema_tools import create_get_schema
 UpdateUserInfo=create_get_schema(User,default_model_name="UpdateUserInfo",fields=['id','nick_name','email','qq'])
+UserRetrieveModel=create_get_schema(User,default_model_name="UserRetrieveModel",)

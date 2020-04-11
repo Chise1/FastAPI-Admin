@@ -16,3 +16,8 @@
 2、view改为组装方式，
 3、注意修改depends的传递方式
 4、 注意，post和put要返回规定值
+
+
+当前任务：
+实现delete
+user接口重写

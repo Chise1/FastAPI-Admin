@@ -31,7 +31,7 @@ class User(Base):
     status = Column(Integer, comment="状态", default=0)
     is_superuser = Column(Boolean, default=False, comment="是否为超级管理员")
     is_active = Column(Boolean, default=True, comment="是否刻可登录")
-
+    is_delete=Column(Boolean, default=False, comment="是否删除")
     def __str__(self):
         return self.username
 

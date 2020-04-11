@@ -7,10 +7,10 @@
 @Software: PyCharm
 @info    :
 """
-from datetime import datetime
+from datetime import datetime, date
 from typing import List
 from pydantic import BaseModel, Field
-from sqlalchemy import Integer, Boolean, String, Float, DateTime, Text, DATE
+from sqlalchemy import Integer, Boolean, String, Float, DateTime, Text, DATE, Date,DECIMAL
 from typing import Optional
 from datetime import datetime
 
@@ -27,7 +27,6 @@ def get_model_str(model, exclude: Optional[List[str]] = None,
         if fields:
             if not fields.count(filed_name):
                 continue
-
         if filed.default or filed.default == 0:
             if isinstance(filed.default.arg, str):
                 default_value = '"' + filed.default.arg + '"'
@@ -45,7 +44,7 @@ def get_model_str(model, exclude: Optional[List[str]] = None,
         # 生成的结构： id:int=Field(...,)大概这样的结构
         # res_field = Field(default_value, description=filed.description)  # Field参数
         res_field = 'Field({}, description="{}")'.format(default_value, filed.comment)  # Field参数
-        if isinstance(filed.type, Integer):
+        if isinstance(filed.type, Integer) :
             tp = filed_name + ':int=' + res_field
         elif isinstance(filed.type, Float):
             tp = filed_name + ':float=' + res_field
@@ -57,6 +56,8 @@ def get_model_str(model, exclude: Optional[List[str]] = None,
                                                                                            max_length)
         elif isinstance(filed.type, DateTime):
             tp = filed_name + ':datetime=' + 'Field({}, description="{}")'.format(default_value, filed.comment )
+        elif isinstance(filed.type, Date):
+            tp = filed_name + ':date=' + 'Field({}, description="{}")'.format(default_value, filed.comment)
         else:
             tp = filed_name + ':str=' + res_field
         __mappings__[filed_name] = tp
@@ -86,12 +87,12 @@ class {}(BaseModel):
     # mappings为从model获取的相关配置
     s_fields = get_model_str(model, exclude, fields)
     base_model = base_model.format(model_name, s_fields)
-    cls_dict = {"BaseModel": BaseModel, "Field": Field,"datetime":datetime}
+    cls_dict = {"BaseModel": BaseModel, "Field": Field,"datetime":datetime,"date":date}
     exec(base_model, cls_dict)
     # 将schema绑定到model
+
     schema = cls_dict[model_name]
     return schema
-
 
 def create_schema(model, default_model_name=None, exclude: Optional[List[str]] = None,
                   fields: Optional[List[str]] = None) -> (
@@ -154,7 +155,7 @@ class {0}PagingModel(BaseModel):
         model_name = default_model_name
     s_fields = get_model_str(model, exclude, fields)
     base_model = base_model.format(model_name, s_fields)
-    cls_dict = {"BaseModel": BaseModel, "Field": Field,"datetime":datetime}
+    cls_dict = {"BaseModel": BaseModel, "Field": Field,"datetime":datetime,"date":date}
     exec(base_model, cls_dict)
     # 将schema绑定到model
     schema = cls_dict[model_name + "PagingModel"]

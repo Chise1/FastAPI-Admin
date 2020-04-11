@@ -71,10 +71,18 @@ class RegisterUser(BaseModel):
         return v
 
 class ModifyPassword(BaseModel):
+    id:int
     new_password:str
 
 
 class ModifyBaseInfo(BaseModel):
+    id:int
     qq:str
     email:EmailStr
     nick_name:str
+class ForbbidenAccount(BaseModel):
+    id:int#禁用账户
+    is_active:bool
+class DeleteAccount(BaseModel):
+    id:int#删除账户
+    # is_delete:bool=False
