@@ -88,9 +88,9 @@ class Order(Base):
     transaction_amount=Column(String(255),comment="交易金额")
     transaction_domain=Column(String(32),comment="交易域名")
     TRANSCATION_TYPE=((0,"微信"),(1,"支付宝"))
-    transaction_type=Column(ChoiceType(TRANSCATION_TYPE),comment="交易类型")#付款类型
+    transaction_type=Column(ChoiceType(TRANSCATION_TYPE),comment="交易类型"+str(TRANSCATION_TYPE))#付款类型
     STATUS=((1,"已支付"),(0,"未支付"),(2,"已退款"))
-    status=Column(ChoiceType(STATUS),comment="状态",default=0)
+    status=Column(ChoiceType(STATUS),comment="状态"+str(STATUS),default=0)
     finish_time=Column(DateTime,comment="交易时间/完成时间")
     create_time=Column(DateTime,comment="创建时间",default=datetime.now)
     inform_address=Column(String(255),comment="异步通知地址")

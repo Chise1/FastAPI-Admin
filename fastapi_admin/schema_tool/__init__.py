@@ -9,6 +9,8 @@
 """
 
 # -*- encoding: utf-8 -*-
+from sqlalchemy_utils import ChoiceType
+
 """
 @File    : schema_tools.py
 @Time    : 2020/4/7 20:48
@@ -65,6 +67,8 @@ def get_field_type_and_maxlength(filed, ):
         return 'datetime', None
     elif isinstance(filed.type, Date):
         return 'date', None
+    elif isinstance(filed.type, ChoiceType):
+        return 'int',None
     else:
         return 'str', None
 
