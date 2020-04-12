@@ -7,11 +7,16 @@
 @Software: PyCharm
 @info    :
 """
+import random
+import uuid
+
+from fastapi_admin.schema_tool import create_schema as create_schema_v2
 from fastapi import APIRouter
 from typing import Union, List, Any, Set
 from .auth.views import login, create_create, create_superuser
 from .databaseManage import AdminDatabase
 from .publicDepends.paging_query import get_res_schema, page_query
+from .schema_tool import create_page_schema
 from .views import create_View, method_get_func
 from typing import Optional
 from .auth.models import User, Group, Permission, UserLog
@@ -177,3 +182,28 @@ class FastAPIAdmin:
                                                                                  "smtp_email_password"], need_user=True)
         self.register_router(baseconfig_func, method="GET", prefix="/config/baseconfig", res_model=BaseConfig, )
         self.register_router(emailconfig_func, method="GET", prefix="/config/emailconfig", res_model=EmailConfig)
+
+    def register_Model_v2(self, model, params_dict: dict):
+        """升级版获取view"""
+        # 注意：如果model是一个列表，那么根据model列表生成一个总的字段。
+        # 如果model为一个list，则field一定要自定义，防止出现重复字段,
+        # 如果两个model有重复字段，那么使用model名字+_字段名字的格式进行field控制和exclude和field_param控制
+        # 由于暂时没有需求，大家自行解决重复字段的显示问题，对于id这个参数，默认会是最后一个model的字段，当然这并不影响（因为绝大多数的model_id都是同样的规则)
+        for method, param in params_dict.items():
+            if method == 'GET':
+                # schema_name = param.get('schema_name') or param.get("name") or str(model.__name__) + "_" + str(
+                #     ''.join(random.sample('zyxwvutsrqponmlkjihgfedcba', 5)))
+                # if str(param.get('use_page', None)) == 'None' or param.get('use_page', None):
+                #     schema = create_page_schema(model, schema_name=schema_name, need_fields=param.get('need_fields'),
+                #                                 fields_params=param.get('fields'), exclude=param.get("exclude"))
+                #
+                #
+                # else:
+                #     schema = create_schema_v2(model, schema_name=schema_name, need_fields=param.get('need_fields'),
+                #                               fields_params=param.get('fields'), exclude=param.get("exclude"))
+                if isinstance(model, list):
+                    func = page_query(model,param.get("sql"))
+                else:
+                    func=page_query(model)
+                prefix = param.get("prefix") or "/v2/admin/" + str(model.__name__)
+                self.__router.get(prefix, description=param.get('description'), name=param.get("name"), )(func)

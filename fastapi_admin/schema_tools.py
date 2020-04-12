@@ -13,7 +13,6 @@ from pydantic import BaseModel, Field
 from sqlalchemy import Integer, Boolean, String, Float, DateTime, Text, DATE, Date, DECIMAL
 from typing import Optional
 
-
 def get_model_str(model, exclude: Optional[List[str]] = None,
                   fields: Optional[List[str]] = None):
     # mappings为从model获取的相关配置

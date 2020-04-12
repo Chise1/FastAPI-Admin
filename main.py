@@ -55,7 +55,28 @@ async  def start():
     for user in users:
         await AdminDatabase().database.execute( AccountBook.__table__.insert().values(user_id=user.id,member_id=default_member.id))
     return {"code":0}
-
+admin.register_Model_v2(User,{
+        "GET": {
+            # "description": "",  # 接口描述
+            # "prefix":"",
+            # "name": "接口名称",
+            # "schema_name": "cc",
+            # "need_user": False,
+            # "fields": {
+            #     "id": {
+            #         "nullable": True,
+            #         "description": "abc",  # 自带描述
+            #         "type": "",  # schema的默认类型
+            #         "default": object,  # 也可以是None
+            #         "max_length": "",  # 只有type为str时有效
+            #     }
+            # },
+            # 'need_fields': None,  # 如果是多表查询，则必须为存储字典，分别为{表名:[字段列表]或__all__}
+            # "exclude": None,
+            # "sql": object,  # 也可以是字符串,也可以是sqlalchemy.sql，默认为fetchall，
+            # "use_page": True,  # 是否启动page分页功能，如果启动分页功能按照分页功能的方式显示，如果不是，则会获取第一条，所以一定要自己写sql
+        }
+    })
 
 if __name__ == "__main__":
     import uvicorn

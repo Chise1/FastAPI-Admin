@@ -10,10 +10,11 @@
 import math
 from typing import Dict, List, Optional
 from fastapi import Depends
-from sqlalchemy import select, func
+from sqlalchemy import  func
 from fastapi_admin import AdminDatabase
 from ..auth.models import User
 from pydantic import BaseModel, Field
+from sqlalchemy.sql import select
 
 from fastapi_admin.auth.depends import create_current_active_user
 
@@ -44,18 +45,22 @@ def get_res_schema(schema, defalut=None):
         data: List[schema] = Field(defalut, )
 
     return ResModel
-
-
-def page_query(model, ):
+def page_query(model, select_query=None):
     """
     分页显示生成器
     :param model:
+    :param select_query:传入的query搜索
     :return:
     """
 
     async def res(page: Dict[str, int] = Depends(paging_query_depend)):
-        query = model.__table__.select().offset((page['page_number'] - 1) * page['page_size']).limit(
-            page['page_size'])  # 第一页，每页20条数据。 默认第一页。
+        if str(select_query) != 'None':
+            query = select_query.offset((page['page_number'] - 1) * page['page_size']).limit(
+                page['page_size'])  # 第一页，每页20条数据。 默认第一页。
+        else:
+            assert not isinstance( model,list),"model为列表时必须自定义query"
+            query = select([model]).offset((page['page_number'] - 1) * page['page_size']).limit(
+                page['page_size'])  # 第一页，每页20条数据。 默认第一页。
         paginate_obj = await AdminDatabase().database.fetch_all(query)
         query2 = select([func.count(model.__table__.c.id)])
         total_page = await AdminDatabase().database.fetch_val(query2)
@@ -66,17 +71,18 @@ def page_query(model, ):
             "page_size": page['page_size'],
             "data": paginate_obj
         }
-
     return res
 
 
-def page_base_query(model, default_query=None,need_user=False):
+def page_base_query(model, default_query=None, need_user=False):
     """
     分页显示生成器，可以自定义query
     :param model:
     :return:
     """
-    async def res(page: Dict[str, int] = Depends(paging_query_depend),current_user: User = Depends(create_current_active_user(need_user))):
+
+    async def res(page: Dict[str, int] = Depends(paging_query_depend),
+                  current_user: User = Depends(create_current_active_user(need_user))):
         if str(default_query):
             query = default_query.offset((page['page_number'] - 1) * page['page_size']).limit(
                 page['page_size'])  # 第一页，每页20条数据。 默认第一页。
@@ -90,7 +96,7 @@ def page_base_query(model, default_query=None,need_user=False):
             print(i)
         query2 = select([func.count(model.__table__.c.id)])
         total_page = await AdminDatabase().database.fetch_val(query2)
-        res_obj= {
+        res_obj = {
             "page_count": int(math.ceil(total_page * 1.0 / page['page_size'])),
             "rows_total": total_page,
             "page_number": page['page_number'],
@@ -99,4 +105,5 @@ def page_base_query(model, default_query=None,need_user=False):
         }
         print(res_obj)
         return res_obj
+
     return res

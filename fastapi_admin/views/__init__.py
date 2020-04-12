@@ -11,13 +11,15 @@ import math
 
 from sqlalchemy import select, func
 
+from .methods_get import model_get_list_func
 from .. import AdminDatabase
 from ..auth.depends import get_current_active_user, create_current_active_user
 from ..auth.models import User
 from typing import List, Union, Set, Dict
-from fastapi import Body, Depends
+from fastapi import Body, Depends, APIRouter
 
-from ..publicDepends.paging_query import paging_query_depend
+from ..publicDepends.paging_query import paging_query_depend, page_query
+from ..schema_tool import create_page_schema, create_schema
 from ..schema_tools import create_get_page_schema
 
 
@@ -143,29 +145,31 @@ def method_get_func(model, fields="__all__", need_user=False, **kwargs):
     return list
 
 
-def get_view_v2(model: list, params_dict: dict, ):
-    """升级版获取view"""
-    # 注意：如果model是一个列表，那么根据model列表生成一个总的字段。
-    pass
-    params_dict = {
-        "GET": {
-            "description": "",  # 接口描述
-            "name": "接口名称",
-            "need_user": False,
-            "fields": {
-                "id": {
-                    "nullable": True,
-                    "description": "abc",  # 自带描述
-                    "type": "",  # schema的默认类型
-                    "default": object,  # 也可以是None
-                    "max_length":"",#只有type为str时有效
-                }
-            },
-            "exclude":[],
-            "sql": object,  # 也可以是字符串,也可以是sqlalchemy.sql，默认为fetchall，
-            "use_page": True,  # 是否启动page分页功能，如果启动分页功能按照分页功能的方式显示，如果不是，则会获取第一条，所以一定要自己写sql
-        }
-    }
+import uuid
+
+
+    # params_dict = {
+    #     "GET": {
+    #         "description": "",  # 接口描述
+    #         "prefix":"",
+    #         "name": "接口名称",
+    #         "schema_name": "cc",
+    #         "need_user": False,
+    #         "fields": {
+    #             "id": {
+    #                 "nullable": True,
+    #                 "description": "abc",  # 自带描述
+    #                 "type": "",  # schema的默认类型
+    #                 "default": object,  # 也可以是None
+    #                 "max_length": "",  # 只有type为str时有效
+    #             }
+    #         },
+    #         'need_fields': [],  # 如果是多表查询，则必须为存储字典，分别为{表名:[字段列表]或__all__}
+    #         "exclude": [],
+    #         "sql": object,  # 也可以是字符串,也可以是sqlalchemy.sql，默认为fetchall，
+    #         "use_page": True,  # 是否启动page分页功能，如果启动分页功能按照分页功能的方式显示，如果不是，则会获取第一条，所以一定要自己写sql
+    #     }
+    # }
 
     # for method in params_dict:
     #     if method == 'GET':
