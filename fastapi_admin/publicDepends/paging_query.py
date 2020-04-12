@@ -45,7 +45,7 @@ def get_res_schema(schema, defalut=None):
         data: List[schema] = Field(defalut, )
 
     return ResModel
-def page_query(model, select_query=None):
+def page_query(model, select_query=None,need_login=False):
     """
     分页显示生成器
     :param model:
@@ -53,7 +53,7 @@ def page_query(model, select_query=None):
     :return:
     """
 
-    async def res(page: Dict[str, int] = Depends(paging_query_depend)):
+    async def res(page: Dict[str, int] = Depends(paging_query_depend),current_user: User = Depends(create_current_active_user(need_login))):
         if str(select_query) != 'None':
             query = select_query.offset((page['page_number'] - 1) * page['page_size']).limit(
                 page['page_size'])  # 第一页，每页20条数据。 默认第一页。

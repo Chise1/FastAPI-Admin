@@ -21,12 +21,14 @@ def model_post_func(model, default_model_name=None, exclude: Optional[List[str]]
                     fields: Optional[List[str]] = None, res_func_name=None, need_user=True) -> (
         Callable, BaseModel):
     """根据model生成post创建接口"""
-    res_schema=create_get_schema(model, default_model_name, exclude, fields)
+    if not default_model_name:
+        default_model_name=model.__name__+"Post"
+    res_schema=create_get_schema(model, default_model_name+"Res", exclude, fields)
     if not exclude and not fields:
         exclude = ['id']
     elif exclude:
         exclude.append('id')
-    schema = create_get_schema(model, default_model_name, exclude, fields)
+    schema = create_get_schema(model, default_model_name+"Post", exclude, fields)
 
     async def res(post_dict: schema, current_user: User = Depends(create_current_active_user(need_user))):
         res_dict = dict(post_dict)

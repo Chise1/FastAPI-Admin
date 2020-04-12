@@ -111,9 +111,9 @@ def create_View(model, schema, schema_noid=None, methods: Set[str] = ("GET", "PU
                                                                                                             database,
                                                                                                             schema,
                                                                                                             schema_noid)
+from typing import Callable
 
-
-def method_get_func(model, fields="__all__", need_user=False, **kwargs):
+def method_get_func(model, fields="__all__", need_user=False, **kwargs)->Callable:
     """生成一个model的get访问"""
 
     async def list(page: Dict[str, int] = Depends(paging_query_depend),

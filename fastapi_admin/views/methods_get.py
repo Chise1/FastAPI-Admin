@@ -14,15 +14,16 @@ from pydantic import BaseModel
 from .. import page_query, AdminDatabase
 from ..auth.depends import create_current_active_user
 from ..schema_tools import create_get_page_schema, create_get_schema
-
+__all__=['model_get_list_func','model_get_func_fetch_one']
 
 def model_get_list_func(model, default_model_name=None, exclude: Optional[List[str]] = None,
-                        fields: Optional[List[str]] = None) -> (Callable, BaseModel):
+                        fields: Optional[List[str]] = None,need_login=True) -> (Callable, BaseModel):
     """根据model生成列表get的带列表和分页的数据"""
+    if not default_model_name:
+        default_model_name=model.__name__+"Get"
     schema = create_get_page_schema(model, default_model_name, exclude, fields)
 
-    return page_query(model), schema
-
+    return page_query(model,need_login=need_login), schema
 
 
 def model_get_func_fetch_one(model, default_model_name=None, exclude: Optional[List[str]] = None,

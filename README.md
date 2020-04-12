@@ -24,6 +24,9 @@ admin.register_Model(User)
 会生成这样的接口
 ![avatar](doc/1585901894(1).jpg)
 ## update
+### v20200412
+完善admin的注册功能，新增多表联合查询的get，功能还不完善，事情贼多。
+新增schema_tool工具，生成的schema更完善更准确(还在测试中)
 ### v20200411 
 完善views里面的相关自动方法生成功能
 ### v20200410

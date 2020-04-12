@@ -7,6 +7,9 @@
 @Software: PyCharm
 @info    :
 """
+from datetime import datetime
+
+from sqlalchemy import DateTime
 from sqlalchemy import Column, String, Integer, Boolean, Date, Text
 from sqlalchemy_utils import ChoiceType
 from fastapi_admin.auth.models import Base
@@ -72,3 +75,23 @@ class BusinessManager(Base):
     account_bank=Column(ChoiceType(ACCOUNT_BANK),comment="开户行")
     account_bank_address=Column(String(255),comment="开户行省市")
     account_id=Column(String(32),comment="银行账号")
+
+
+class Order(Base):
+    __tablename__ = "wxsh_order"
+    id = Column(Integer, primary_key=True, index=True,comment="订单号")
+    bussiness_order_id=Column(String(32),comment="商户订单号")
+    offical_order_id = Column(String(32), comment="官方订单号")
+    user_id=Column(Integer,comment="商户ID")
+    channel_id=Column(String(32),comment="通道id")#对应服务商列表
+    goods_name=Column(String(32),comment="商品名称")
+    transaction_amount=Column(String(255),comment="交易金额")
+    transaction_domain=Column(String(32),comment="交易域名")
+    TRANSCATION_TYPE=((0,"微信"),(1,"支付宝"))
+    transaction_type=Column(ChoiceType(TRANSCATION_TYPE),comment="交易类型")#付款类型
+    STATUS=((1,"已支付"),(0,"未支付"),(2,"已退款"))
+    status=Column(ChoiceType(STATUS),comment="状态",default=0)
+    finish_time=Column(DateTime,comment="交易时间/完成时间")
+    create_time=Column(DateTime,comment="创建时间",default=datetime.now)
+    inform_address=Column(String(255),comment="异步通知地址")
+    inform=Column(String(255),comment="异步返回数据")
