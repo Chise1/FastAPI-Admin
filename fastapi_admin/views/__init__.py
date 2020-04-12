@@ -154,13 +154,14 @@ def get_view_v2(model: list, params_dict: dict, ):
             "need_user": False,
             "fields": {
                 "id": {
-                    "can_null": True,
+                    "nullable": True,
                     "description": "abc",  # 自带描述
                     "type": "",  # schema的默认类型
                     "default": object,  # 也可以是None
-                    "max_length":"",
+                    "max_length":"",#只有type为str时有效
                 }
             },
+            "exclude":[],
             "sql": object,  # 也可以是字符串,也可以是sqlalchemy.sql，默认为fetchall，
             "use_page": True,  # 是否启动page分页功能，如果启动分页功能按照分页功能的方式显示，如果不是，则会获取第一条，所以一定要自己写sql
         }

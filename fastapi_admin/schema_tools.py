@@ -12,7 +12,6 @@ from typing import List
 from pydantic import BaseModel, Field
 from sqlalchemy import Integer, Boolean, String, Float, DateTime, Text, DATE, Date, DECIMAL
 from typing import Optional
-from datetime import datetime
 
 
 def get_model_str(model, exclude: Optional[List[str]] = None,
@@ -139,6 +138,8 @@ def create_get_page_schema(model, default_model_name=None, exclude: Optional[Lis
     :return:
     """
     base_model: str = """
+from typing import List
+from pydantic import BaseModel,Field
 class {0}BASEPAGE(BaseModel):
 {1}
 class {0}PagingModel(BaseModel):
@@ -146,7 +147,7 @@ class {0}PagingModel(BaseModel):
     rows_total: int
     page_number: int
     page_size: int
-    data: {0}BASEPAGE
+    data: List[{0}BASEPAGE]
     """
     if not default_model_name:
         model_name = model.__name__
@@ -154,7 +155,7 @@ class {0}PagingModel(BaseModel):
         model_name = default_model_name
     s_fields = get_model_str(model, exclude, fields)
     base_model = base_model.format(model_name, s_fields)
-    cls_dict = {"BaseModel": BaseModel, "Field": Field, "datetime": datetime, "date": date}
+    cls_dict = {"datetime": datetime, "date": date,}
     exec(base_model, cls_dict)
     # 将schema绑定到model
     print(base_model)
