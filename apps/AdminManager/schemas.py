@@ -9,9 +9,7 @@
 """
 from decimal import Decimal
 from typing import List
-
-from pydantic import BaseModel, DecimalError, Field
-
+from pydantic import BaseModel
 from fastapi_admin import User
 from fastapi_admin.publicDepends.paging_query import PagingModel
 

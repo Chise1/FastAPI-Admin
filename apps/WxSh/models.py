@@ -78,7 +78,8 @@ class BusinessManager(Base):
 
 class Order(Base):
     __tablename__ = "wxsh_order"
-    id = Column(Integer, primary_key=True, index=True,comment="订单号")
+    id = Column(Integer, primary_key=True, index=True)
+    platform_id = Column(String(32), comment="平台订单号")
     bussiness_order_id=Column(String(32),comment="商户订单号")
     offical_order_id = Column(String(32), comment="官方订单号")
     user_id=Column(Integer,comment="商户ID")
@@ -87,6 +88,10 @@ class Order(Base):
     transaction_amount=Column(String(255),comment="交易金额")
     transaction_domain=Column(String(32),comment="交易域名")
     TRANSCATION_TYPE=(('wxpay',"微信"),('alipay',"支付宝"))
+    # jsapi = 'jsapi'
+    # native = 'native'
+    # alipay = '支付宝当面付'
+    # syt = '收银台'
     transaction_type=Column(String,comment="交易类型"+str(TRANSCATION_TYPE))#付款类型
     STATUS=((1,"已支付"),(0,"未支付"),(2,"已退款"))
     status=Column(Integer,comment="状态"+str(STATUS),default=0)

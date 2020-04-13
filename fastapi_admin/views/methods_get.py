@@ -22,7 +22,6 @@ def model_get_list_func(model, default_model_name=None, exclude: Optional[List[s
     if not default_model_name:
         default_model_name=model.__name__+"Get"
     schema = create_get_page_schema(model, default_model_name, exclude, fields)
-
     return page_query(model,need_login=need_login), schema
 
 
@@ -60,5 +59,4 @@ def model_get_func_fetch_one(model, default_model_name=None, exclude: Optional[L
     else:
         model_name=res_func_name
     res.__name__=model_name
-
     return res, schema
