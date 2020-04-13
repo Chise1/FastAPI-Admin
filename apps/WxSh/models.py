@@ -11,7 +11,6 @@ from datetime import datetime
 
 from sqlalchemy import DateTime
 from sqlalchemy import Column, String, Integer, Boolean, Date, Text
-from sqlalchemy_utils import ChoiceType
 from fastapi_admin.auth.models import Base
 class ServiceProviders(Base):
     """服务商列表"""
@@ -40,9 +39,9 @@ class BusinessManager(Base):
     email=Column(String(32),comment="邮箱")
     #主体资料
     BUSSINESS_TYPE=((0,"个体户"),(1,"企业"))
-    business_type=Column(ChoiceType(BUSSINESS_TYPE),comment="主体类型")
+    business_type=Column(Integer,comment="主体类型"+str(BUSSINESS_TYPE),default=0)
     BUSSINESS_CARD_TYPE=((0,"中国大陆居民-身份证"),)
-    business_card_type=Column(ChoiceType(BUSSINESS_CARD_TYPE),comment="经营者/法人身份证件")
+    business_card_type=Column(Integer,comment="经营者/法人身份证件"+str(BUSSINESS_TYPE))
     bussiness_name=Column(String(32),comment="商户名称")
     business_manager_name=Column(String(32),comment="个体经营者/法人姓名")
     is_favoree=Column(Boolean,comment="经营者/法人是否是受益人")
@@ -59,9 +58,9 @@ class BusinessManager(Base):
     bussiness_name_short=Column(String(18),comment="商户简称")
     service_tel=Column(String(11),comment="客服电话")
     WORKING_GROUP_CHOICE=((0,"线下门店"),(1,"公众号"))
-    working_group=Column(ChoiceType(WORKING_GROUP_CHOICE),comment="经营场景类型")
+    working_group=Column(Integer,comment="经营场景类型")
     INDUSTRY_INVOLVED=((0,"培训机构"),)
-    industry_involved=Column(ChoiceType(INDUSTRY_INVOLVED),comment="所属行业")
+    industry_involved=Column(Integer,comment="所属行业")
     special_certification=Column(String(255),comment="特殊资质")#照片
     # 公众号资料
     gzh_appid=Column(String(64),comment="公众号appid")
@@ -69,10 +68,10 @@ class BusinessManager(Base):
 
     #结算银行账户
     ACCOUNT_TYPE=((0,"对公银行账户"),(1,"经营这个人银行卡"))
-    account_type=Column(ChoiceType(ACCOUNT_TYPE),comment="账户类型")
+    account_type=Column(Integer,comment="账户类型")
     account_user_name=Column(String(18),comment="开户人姓名")
     ACCOUNT_BANK=((0,"工商银行"),)
-    account_bank=Column(ChoiceType(ACCOUNT_BANK),comment="开户行")
+    account_bank=Column(Integer,comment="开户行")
     account_bank_address=Column(String(255),comment="开户行省市")
     account_id=Column(String(32),comment="银行账号")
 
@@ -87,10 +86,10 @@ class Order(Base):
     goods_name=Column(String(32),comment="商品名称")
     transaction_amount=Column(String(255),comment="交易金额")
     transaction_domain=Column(String(32),comment="交易域名")
-    TRANSCATION_TYPE=((0,"微信"),(1,"支付宝"))
-    transaction_type=Column(ChoiceType(TRANSCATION_TYPE),comment="交易类型"+str(TRANSCATION_TYPE))#付款类型
+    TRANSCATION_TYPE=(('wxpay',"微信"),('alipay',"支付宝"))
+    transaction_type=Column(String,comment="交易类型"+str(TRANSCATION_TYPE))#付款类型
     STATUS=((1,"已支付"),(0,"未支付"),(2,"已退款"))
-    status=Column(ChoiceType(STATUS),comment="状态"+str(STATUS),default=0)
+    status=Column(Integer,comment="状态"+str(STATUS),default=0)
     finish_time=Column(DateTime,comment="交易时间/完成时间")
     create_time=Column(DateTime,comment="创建时间",default=datetime.now)
     inform_address=Column(String(255),comment="异步通知地址")

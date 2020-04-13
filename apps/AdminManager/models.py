@@ -9,7 +9,7 @@
 """
 import datetime
 from sqlalchemy.orm import relationship
-from sqlalchemy import Column, String, Integer, ForeignKey, DateTime, DECIMAL, Text
+from sqlalchemy import Column, String, Integer, ForeignKey, DateTime,  Text
 from fastapi_admin.auth.models import Base
 
 

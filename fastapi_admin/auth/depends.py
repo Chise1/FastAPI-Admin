@@ -110,7 +110,11 @@ async def get_current_user(token: str = Depends(oauth2_scheme)):
         raise credentials_exception
     user = await get_user(username=token_data.username)
     if user is None:
-        raise credentials_exception
+        raise HTTPException(
+        status_code=status.HTTP_400_BAD_REQUEST,
+        detail="账户或密码错误",
+        headers={"WWW-Authenticate": "Bearer"},
+    )
     return user
 
 
@@ -121,7 +125,7 @@ async def get_current_active_user(current_user: User = Depends(get_current_user)
     :return:
     """
     if not current_user.is_active:
-        raise HTTPException(status_code=400, detail="已禁用")
+        raise HTTPException(status_code=403, detail="没有权限")
     return current_user
 async def not_need_user():
     """

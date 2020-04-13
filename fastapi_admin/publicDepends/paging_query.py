@@ -105,5 +105,4 @@ def page_base_query(model, default_query=None, need_user=False):
         }
         print(res_obj)
         return res_obj
-
     return res

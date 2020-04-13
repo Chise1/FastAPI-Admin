@@ -13,7 +13,6 @@ from pydantic import BaseModel, Field
 from sqlalchemy import Integer, Boolean, String, Float, DateTime, Text, DATE, Date, DECIMAL
 from typing import Optional
 
-from sqlalchemy_utils import ChoiceType
 
 
 def get_model_str(model, exclude: Optional[List[str]] = None,
@@ -57,8 +56,8 @@ def get_model_str(model, exclude: Optional[List[str]] = None,
             tp = filed_name + ':datetime=' + 'Field({}, description="{}")'.format(default_value, filed.comment)
         elif isinstance(filed.type, Date):
             tp = filed_name + ':date=' + 'Field({}, description="{}")'.format(default_value, filed.comment)
-        elif isinstance(filed.type,ChoiceType):
-            tp = filed_name + ':int=' + 'Field({}, description="{}")'.format(default_value, filed.comment+str(filed.type.choices))
+        # elif isinstance(filed.type,ChoiceType):
+        #     tp = filed_name + ':int=' + 'Field({}, description="{}")'.format(default_value, filed.comment+str(filed.type.choices))
         else:
             tp = filed_name + ':str=' + res_field
         __mappings__[filed_name] = tp
