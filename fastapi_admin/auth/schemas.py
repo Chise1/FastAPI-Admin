@@ -45,15 +45,14 @@ def is_ascii(s):
 def is_enable_passowrd(s):
     return all((ord(c) < 128 and (ord(c) != 33 and ord(c) != 42 and ord(c) != 37)) for c in s)
 
-from typing import Optional
 class RegisterUser(BaseModel):
     """注册用"""
-    id:str=Field(None,)
-    username: str
-    password: str
-    nick_name: str
-    email: EmailStr
-    obj_guid: Optional[str]=None
+    username: str=Field(...,description="账户")
+    password: str=Field(...,description="密码")
+    nick_name: str=Field(...,description="昵称")
+    email: EmailStr=Field(...,description="邮箱")
+    phone_number:str=Field(None,description="手机号",max_length=11,min_length=11)
+
     @validator('username')
     def username_match(cls, v, values, **kwargs):
         if not is_ascii(v):

@@ -25,6 +25,7 @@ from .schema_tools import create_schema
 from .config.schemas import BaseConfig
 from .config.models import Config
 from .views.methods_get import model_get_func_fetch_one
+from .auth.views import router as auth_router
 
 
 class FastAPIAdmin:
@@ -62,6 +63,9 @@ class FastAPIAdmin:
         # router.include_router(self.__router,prefix='/admin',tags=['admin'])
         self.__router = router
         self.admin_database = AdminDatabase(database_url=database_url)
+        #注册路由
+        self.__router.include_router(auth_router, prefix='/auth', tags=['auth'])
+
         # 需要创建数据库的时候
         # self.admin_database.create_all()
         self.database = self.admin_database.database
@@ -202,8 +206,8 @@ class FastAPIAdmin:
                 #     schema = create_schema_v2(model, schema_name=schema_name, need_fields=param.get('need_fields'),
                 #                               fields_params=param.get('fields'), exclude=param.get("exclude"))
                 if isinstance(model, list):
-                    func = page_query(model,param.get("sql"))
+                    func = page_query(model, param.get("sql"))
                 else:
-                    func=page_query(model)
+                    func = page_query(model)
                 prefix = param.get("prefix") or "/v2/admin/" + str(model.__name__)
                 self.__router.get(prefix, description=param.get('description'), name=param.get("name"), )(func)

@@ -15,8 +15,10 @@ from fastapi_admin.auth.depends import authenticate_user, create_access_token, g
     get_password_hash, create_current_active_user
 from fastapi_admin.settings import ACCESS_TOKEN_EXPIRE_MINUTES
 from .models import User
+from .. import AdminDatabase
 from ..auth.schemas import UserSchema, RegisterUser
-
+from  fastapi import APIRouter
+router=APIRouter()
 
 async def login(form_data: OAuth2PasswordRequestForm = Depends()):
     """
@@ -37,10 +39,16 @@ async def login(form_data: OAuth2PasswordRequestForm = Depends()):
     )
     return {"access_token": access_token, "token_type": "bearer"}
 
-
+@router.post('/v1/user/register',name="普通用户注册",description="普通用户的注册功能")
 async def user_register(form_data: RegisterUser):
     """注册用户"""
-    pass
+    print(form_data)
+    register_info=dict(form_data)
+    db=AdminDatabase().database
+    query=User.__table__.insert().values(register_info)
+    register_info['id']=await db.execute(query)
+
+    return {"code":200,"msg":"success"}
 
 
 # 创建一个User的特殊view
@@ -79,6 +87,3 @@ async def create_superuser(model, database, instance: UserSchema = Body(..., )):
 
 def create_User_View(model, database):
     pass
-# async def get_user
-#
-# async def delete_user(model,)
