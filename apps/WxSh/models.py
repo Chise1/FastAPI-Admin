@@ -8,7 +8,7 @@
 @info    :
 """
 from datetime import datetime
-from sqlalchemy import DateTime, ForeignKey
+from sqlalchemy import DateTime, ForeignKey, func
 from sqlalchemy import Column, String, Integer, Boolean, Date, Text
 from fastapi_admin.auth.models import Base
 
@@ -40,7 +40,7 @@ class BusinessManager(Base):
     email = Column(String(32), comment="邮箱")
     # 主体资料
     BUSSINESS_TYPE = ((0, "个体户"), (1, "企业"))
-    business_type = Column(Integer, comment="主体类型" + str(BUSSINESS_TYPE), default=0)
+    business_type = Column(Integer, comment="主体类型" + str(BUSSINESS_TYPE), server_default='0')
     BUSSINESS_CARD_TYPE = ((0, "中国大陆居民-身份证"),)
     business_card_type = Column(Integer, comment="经营者/法人身份证件" + str(BUSSINESS_TYPE))
     bussiness_name = Column(String(32), comment="商户名称")
@@ -88,14 +88,10 @@ class Order(Base):
     transaction_amount = Column(String(255), comment="交易金额")
     transaction_domain = Column(String(32), comment="交易域名")
     TRANSCATION_TYPE = (('wxpay', "微信"), ('alipay', "支付宝"))
-    # jsapi = 'jsapi'
-    # native = 'native'
-    # alipay = '支付宝当面付'
-    # syt = '收银台'
-    transaction_type = Column(String, comment="交易类型" + str(TRANSCATION_TYPE))  # 付款类型
+    transaction_type = Column(String(8), comment="交易类型" + str(TRANSCATION_TYPE))  # 付款类型
     STATUS = ((1, "已支付"), (0, "未支付"), (2, "已退款"))
-    status = Column(Integer, comment="状态" + str(STATUS), default=0)
+    status = Column(Integer, comment="状态" + str(STATUS), server_default='0')
     finish_time = Column(DateTime, comment="交易时间/完成时间")
-    create_time = Column(DateTime, comment="创建时间", default=datetime.now)
+    create_time = Column(DateTime, comment="创建时间", server_default=func.now())
     inform_address = Column(String(255), comment="异步通知地址")
     inform = Column(String(255), comment="异步返回数据")

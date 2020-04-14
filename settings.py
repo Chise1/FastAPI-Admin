@@ -13,12 +13,12 @@
 DATABASES = {
         'NAME': "fastapiadmin",
         'USER': "root",
-        'PASSWORD': 'mnbvcxz123',
-        'HOST': "localhost",
+        'PASSWORD': 'admin1234',
+        'HOST': "39.98.132.68",
         'PORT': 3306,
         'ENGINE': "mysql+pymysql"
 }
-# SQLALCHEMY_DATABASE_URL = "{}://{}:{}@{}/{}?charset=utf8mb4".format(DATABASES.get('ENGINE'), DATABASES.get('USER'),
-#                                                                     DATABASES.get('PASSWORD'), DATABASES.get('HOST'),
-#                                                                     DATABASES.get('NAME'))
-SQLALCHEMY_DATABASE_URL = "sqlite:///./sql_app.db"
+SQLALCHEMY_DATABASE_URL = "{}://{}:{}@{}/{}?charset=utf8mb4".format(DATABASES.get('ENGINE'), DATABASES.get('USER'),
+                                                                    DATABASES.get('PASSWORD'), DATABASES.get('HOST'),
+                                                                    DATABASES.get('NAME'))
+# SQLALCHEMY_DATABASE_URL = "sqlite:///./sql_app.db"

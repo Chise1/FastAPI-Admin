@@ -45,13 +45,15 @@ def is_ascii(s):
 def is_enable_passowrd(s):
     return all((ord(c) < 128 and (ord(c) != 33 and ord(c) != 42 and ord(c) != 37)) for c in s)
 
+
 class RegisterUser(BaseModel):
     """注册用"""
-    username: str=Field(...,description="账户")
-    password: str=Field(...,description="密码")
-    nick_name: str=Field(...,description="昵称")
-    email: EmailStr=Field(...,description="邮箱")
-    phone_number:str=Field(None,description="手机号",max_length=11,min_length=11)
+    username: str = Field(..., description="账户")
+    password: str = Field(..., description="密码")
+    nick_name: str = Field(..., description="昵称")
+    email: EmailStr = Field(..., description="邮箱")
+    qq: str = Field(None, description="qq号")
+    phone_number: str = Field(None, description="手机号", max_length=11, min_length=11)
 
     @validator('username')
     def username_match(cls, v, values, **kwargs):
@@ -66,22 +68,27 @@ class RegisterUser(BaseModel):
         if not is_enable_passowrd(v):
             raise ValueError('密码不能有特殊符号')
         if len(v) < 8:
-            raise ValueError("密码尾数不能少于8")
+            raise ValueError("密码长度不能少于8")
         return v
 
+
 class ModifyPassword(BaseModel):
-    id:int
-    new_password:str
+    id: int
+    new_password: str
 
 
 class ModifyBaseInfo(BaseModel):
-    id:int
-    qq:str
-    email:EmailStr
-    nick_name:str
+    id: int
+    qq: str
+    email: EmailStr
+    nick_name: str
+
+
 class ForbbidenAccount(BaseModel):
-    id:int#禁用账户
-    is_active:bool
+    id: int  # 禁用账户
+    is_active: bool
+
+
 class DeleteAccount(BaseModel):
-    id:int#删除账户
+    id: int  # 删除账户
     # is_delete:bool=False

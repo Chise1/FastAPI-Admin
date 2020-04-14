@@ -10,7 +10,7 @@
 from datetime import datetime, date
 from typing import List
 from pydantic import BaseModel, Field
-from sqlalchemy import Integer, Boolean, String, Float, DateTime, Text, DATE, Date, DECIMAL
+from sqlalchemy import Integer, Boolean, String, Float, DateTime, Text, DATE, Date, DECIMAL, func
 from typing import Optional
 
 
@@ -20,6 +20,8 @@ def get_model_str(model, exclude: Optional[List[str]] = None,
     # mappings为从model获取的相关配置
     __mappings__ = {}  # {'name':{'field':Field,'type':type,}}
     for filed in model.__table__.c:
+        if filed.comment=="操作时间":
+            print("got it!")
         filed_name = str(filed).split('.')[-1]
         if exclude:
             if exclude.count(filed_name):
@@ -27,14 +29,16 @@ def get_model_str(model, exclude: Optional[List[str]] = None,
         if fields:
             if not fields.count(filed_name):
                 continue
-
         if filed.default is not None:
             if isinstance(filed.default.arg, str):
                 default_value = '"' + filed.default.arg + '"'
             elif callable(filed.default.arg):
-                default_value = '"' + str(filed.default.arg(filed)) + '"'
+                default_value = '...'
             else:
                 default_value = str(filed.default.arg)
+                if default_value=="now()":
+                    default_value='None'
+
         elif filed.nullable:
             default_value = 'None'
         else:
@@ -88,6 +92,7 @@ class {}(BaseModel):
     s_fields = get_model_str(model, exclude, fields)
     base_model = base_model.format(model_name, s_fields)
     cls_dict = {"BaseModel": BaseModel, "Field": Field, "datetime": datetime, "date": date}
+    print(base_model)
     exec(base_model, cls_dict)
     # 将schema绑定到model
     print(base_model)

@@ -16,7 +16,7 @@ from fastapi_admin.publicDepends.paging_query import PagingModel
 
 class UserModel(BaseModel):
     id:int=None
-    obj_guid:str=None
+    guid:str=None
     username:str=None
     email:str=None
     qq:str=None

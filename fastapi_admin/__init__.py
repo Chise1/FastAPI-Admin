@@ -7,14 +7,12 @@
 @Software: PyCharm
 @info    :
 """
-import random
-import uuid
-
+from .databaseManage import AdminDatabase
 from fastapi_admin.schema_tool import create_schema as create_schema_v2
 from fastapi import APIRouter
 from typing import Union, List, Any, Set
 from .auth.views import login, create_create, create_superuser
-from .databaseManage import AdminDatabase
+
 from .publicDepends.paging_query import get_res_schema, page_query
 from .schema_tool import create_page_schema
 from .views import create_View, method_get_func

@@ -21,3 +21,5 @@
 当前任务：
 实现delete
 user接口重写
+
+注意：重构的时候一定要区别model的server_default和default的区别，前者是不能调用的。

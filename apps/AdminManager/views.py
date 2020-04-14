@@ -79,8 +79,10 @@ async def user_retrieve(id, current_user: User = Depends(create_current_active_u
     query = select([User,  AccountBook.money,AccountBook.rate]).where(User.id == id).where(AccountBook.user_id == User.id)
     print(query)
     return await AdminDatabase().database.fetch_one(query)
-router.get('/user/list/{id}', tags=['user'],description="查看某个用户的详细信息",summary="查看详情")(user_retrieve)
-router.get('/user/list', tags=['user'], response_model=UserListModel, summary="获取用户列表")(user_list)
+router.get('/admin/user/{id}', tags=['user'],description="查看某个用户的详细信息",summary="查看详情")(user_retrieve)
+# router.get('/user/list', tags=['user'], response_model=UserListModel, summary="获取用户列表")(user_list)
+router.get('/admin/user', tags=['user'], response_model=UserListModel, summary="获取用户列表")(user_list)
+
 # router.get('/user/list/{id}', tags=['user'], response_model=UserListModel, summary="获取用户列表")(user_list)
 router.patch('/user/updateInfo', tags=['user'], response_model=ModifyBaseInfo, summary="更新个人数据")(modify_base_info)
 router.patch('/user/modifyPassword', tags=['user'], description="修改密码", summary="修改个人密码")(modify_password)

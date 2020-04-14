@@ -29,6 +29,7 @@ class AdminDatabase():
             cls.__instance = super().__new__(cls)
             cls.database_url = kwargs['database_url']
             cls.database = databases.Database(cls.database_url)
+
         return cls.__instance
 
     def create_all(self):
